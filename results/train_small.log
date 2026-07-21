@@ -1,0 +1,18 @@
+loaded 15 shards, 126178 samples
+train 107252 / val 18926
+ep 1/10  train p=1.7766 v=0.9905  | val p=1.5274 v=0.9734 top1=49.0%
+ep 2/10  train p=1.5006 v=0.9234  | val p=1.4978 v=0.9773 top1=49.4%
+ep 3/10  train p=1.4761 v=0.8186  | val p=1.4713 v=0.7492 top1=49.5%
+ep 4/10  train p=1.4484 v=0.7499  | val p=1.4464 v=0.7413 top1=50.7%
+ep 5/10  train p=1.4259 v=0.7112  | val p=1.4278 v=0.6855 top1=51.0%
+ep 6/10  train p=1.4109 v=0.6776  | val p=1.4238 v=0.6653 top1=51.2%
+ep 7/10  train p=1.3963 v=0.6516  | val p=1.3984 v=0.6409 top1=52.1%
+ep 8/10  train p=1.3831 v=0.6310  | val p=1.3923 v=0.6259 top1=51.9%
+ep 9/10  train p=1.3727 v=0.6151  | val p=1.3837 v=0.6134 top1=52.4%
+ep 10/10  train p=1.3661 v=0.6082  | val p=1.3818 v=0.6114 top1=52.4%
+
+==== GATES ====
+policy top-1 vs search : net 52.4%  |  heuristic prior 37.0%
+value MAE              : net 0.614  |  predict-mean baseline 0.992
+policy gate: PASS   value gate: PASS
+exported train/model_small.npz

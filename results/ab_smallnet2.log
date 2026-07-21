@@ -1,0 +1,33 @@
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+game 0: A seat 0 -> +1  (1W 0L 0D)  48s
+game 1: A seat 1 -> +1  (2W 0L 0D)  24s
+game 2: A seat 0 -> -1  (2W 1L 0D)  45s
+game 3: A seat 1 -> -1  (2W 2L 0D)  12s
+game 4: A seat 0 -> -1  (2W 3L 0D)  43s
+game 5: A seat 1 -> -1  (2W 4L 0D)  50s
+game 6: A seat 0 -> +1  (3W 4L 0D)  41s
+game 7: A seat 1 -> -1  (3W 5L 0D)  48s
+game 8: A seat 0 -> -1  (3W 6L 0D)  50s
+game 9: A seat 1 -> +1  (4W 6L 0D)  43s
+game 10: A seat 0 -> -1  (4W 7L 0D)  38s
+game 11: A seat 1 -> -1  (4W 8L 0D)  45s
+game 12: A seat 0 -> +1  (5W 8L 0D)  39s
+game 13: A seat 1 -> +1  (6W 8L 0D)  47s
+game 14: A seat 0 -> -1  (6W 9L 0D)  42s
+game 15: A seat 1 -> -1  (6W 10L 0D)  40s
+game 16: A seat 0 -> +1  (7W 10L 0D)  50s
+game 17: A seat 1 -> +1  (8W 10L 0D)  44s
+game 18: A seat 0 -> -1  (8W 11L 0D)  35s
+game 19: A seat 1 -> +1  (9W 11L 0D)  41s
+game 20: A seat 0 -> -1  (9W 12L 0D)  51s
+game 21: A seat 1 -> -1  (9W 13L 0D)  47s
+game 22: A seat 0 -> +1  (10W 13L 0D)  52s
+game 23: A seat 1 -> -1  (10W 14L 0D)  47s
+
+A=agents/smallnet_variant  B=submission
+A record: 10W 14L 0D of 24   win rate 41.7% +/- 20% (95% CI)
+VERDICT: inconclusive at this sample size -- do NOT ship on this alone

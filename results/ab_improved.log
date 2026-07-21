@@ -1,0 +1,21 @@
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+game 0: A seat 0 -> +1  (1W 0L 0D)  230s
+game 1: A seat 1 -> +1  (2W 0L 0D)  130s
+game 2: A seat 0 -> -1  (2W 1L 0D)  347s
+game 3: A seat 1 -> +1  (3W 1L 0D)  225s
+game 4: A seat 0 -> +1  (4W 1L 0D)  286s
+game 5: A seat 1 -> +1  (5W 1L 0D)  278s
+game 6: A seat 0 -> +1  (6W 1L 0D)  369s
+game 7: A seat 1 -> +1  (7W 1L 0D)  248s
+game 8: A seat 0 -> +1  (8W 1L 0D)  216s
+game 9: A seat 1 -> +1  (9W 1L 0D)  159s
+game 10: A seat 0 -> -1  (9W 2L 0D)  312s
+game 11: A seat 1 -> -1  (9W 3L 0D)  297s
+
+A=submission  B=agents/v1_frozen
+A record: 9W 3L 0D of 12   win rate 75.0% +/- 24% (95% CI)
+VERDICT: A is better (significant)

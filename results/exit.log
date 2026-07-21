@@ -1,0 +1,143 @@
+
+===== GENERATION 1/2 =====
+>> C:\Users\megha\AppData\Local\Programs\Python\Python312\python.exe C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\selfplay.py --games 16 --workers 2 --budget 0.1 --seed 100 --out C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+[w0] game 0 vs mined_0: reward0=-1 decisions=136 elapsed=16s
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+[w1] game 0 vs mined_0: reward0=1 decisions=141 elapsed=16s
+[w0] game 1 vs mined_1: reward0=1 decisions=157 elapsed=35s
+[w1] game 1 vs mined_1: reward0=1 decisions=176 elapsed=37s
+[w0] game 2 vs mined_2: reward0=1 decisions=107 elapsed=47s
+[w1] game 2 vs mined_2: reward0=1 decisions=127 elapsed=52s
+[w0] game 3 vs mined_3: reward0=1 decisions=63 elapsed=55s
+[w1] game 3 vs mined_3: reward0=1 decisions=143 elapsed=69s
+[w0] game 4 vs mined_4: reward0=-1 decisions=174 elapsed=76s
+[w1] game 4 vs mined_4: reward0=-1 decisions=149 elapsed=88s
+[w0] game 5 vs mined_5: reward0=1 decisions=104 elapsed=89s
+[w1] game 5 vs mined_5: reward0=1 decisions=52 elapsed=94s
+[w0] game 6 vs mined_6: reward0=-1 decisions=148 elapsed=107s
+[w1] game 6 vs mined_6: reward0=-1 decisions=180 elapsed=117s
+[w0] game 7 vs mined_7: reward0=-1 decisions=163 elapsed=128s
+[w0] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w0_1784593817277.npz (1052 samples)
+[w1] game 7 vs mined_7: reward0=1 decisions=172 elapsed=139s
+[w1] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w1_1784593828360.npz (1140 samples)
+[w0] game 8 vs mined_8: reward0=-1 decisions=169 elapsed=149s
+[w1] game 8 vs mined_8: reward0=-1 decisions=136 elapsed=156s
+[w0] game 9 vs mined_9: reward0=-1 decisions=124 elapsed=164s
+[w1] game 9 vs mined_9: reward0=-1 decisions=184 elapsed=178s
+[w0] game 10 vs mined_10: reward0=-1 decisions=163 elapsed=183s
+[w1] game 10 vs mined_10: reward0=1 decisions=116 elapsed=192s
+[w0] game 11 vs mined_11: reward0=-1 decisions=129 elapsed=198s
+[w1] game 11 vs mined_11: reward0=-1 decisions=123 elapsed=207s
+[w0] game 12 vs mined_0: reward0=1 decisions=140 elapsed=216s
+[w1] game 12 vs mined_0: reward0=-1 decisions=127 elapsed=223s
+[w0] game 13 vs mined_1: reward0=1 decisions=169 elapsed=237s
+[w1] game 13 vs mined_1: reward0=1 decisions=149 elapsed=242s
+[w0] game 14 vs mined_2: reward0=-1 decisions=149 elapsed=257s
+[w1] game 14 vs mined_2: reward0=1 decisions=120 elapsed=258s
+[w0] game 15 vs mined_3: reward0=1 decisions=125 elapsed=273s
+[w0] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w0_1784593962099.npz (1168 samples)
+[w1] game 15 vs mined_3: reward0=-1 decisions=126 elapsed=275s
+[w1] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w1_1784593963820.npz (1081 samples)
+done
+>> C:\Users\megha\AppData\Local\Programs\Python\Python312\python.exe C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\train_bc.py --data C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_combined --epochs 10 --batch 256 --out C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen1.npz
+loaded 5 shards, 116397 samples
+train 98938 / val 17459
+ep 1/10  train p=1.7239 v=0.9824  | val p=1.5299 v=0.9637 top1=46.9%
+ep 2/10  train p=1.4877 v=0.9062  | val p=1.4852 v=0.7991 top1=48.1%
+ep 3/10  train p=1.4541 v=0.8012  | val p=1.4392 v=0.7287 top1=49.6%
+ep 4/10  train p=1.4290 v=0.7486  | val p=1.4248 v=0.7162 top1=49.5%
+ep 5/10  train p=1.4078 v=0.7086  | val p=1.4140 v=0.7026 top1=50.2%
+ep 6/10  train p=1.3892 v=0.6716  | val p=1.3791 v=0.6339 top1=50.8%
+ep 7/10  train p=1.3711 v=0.6193  | val p=1.3636 v=0.5947 top1=51.8%
+ep 8/10  train p=1.3507 v=0.5709  | val p=1.3486 v=0.5557 top1=52.4%
+ep 9/10  train p=1.3340 v=0.5312  | val p=1.3418 v=0.5365 top1=52.4%
+ep 10/10  train p=1.3245 v=0.5060  | val p=1.3384 v=0.5298 top1=52.5%
+
+==== GATES ====
+policy top-1 vs search : net 52.5%  |  heuristic prior 35.6%
+value MAE              : net 0.524  |  predict-mean baseline 0.991
+policy gate: PASS   value gate: PASS
+exported C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen1.npz
+deployed C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen1.npz -> submission/model.npz
+
+===== GENERATION 2/2 =====
+>> C:\Users\megha\AppData\Local\Programs\Python\Python312\python.exe C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\selfplay.py --games 16 --workers 2 --budget 0.1 --seed 200 --out C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+[w1] game 0 vs mined_0: reward0=1 decisions=128 elapsed=15s
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+[w0] game 0 vs mined_0: reward0=1 decisions=150 elapsed=18s
+[w0] game 1 vs mined_1: reward0=1 decisions=95 elapsed=29s
+[w1] game 1 vs mined_1: reward0=1 decisions=158 elapsed=34s
+[w1] game 2 vs mined_2: reward0=-1 decisions=131 elapsed=49s
+[w0] game 2 vs mined_2: reward0=-1 decisions=203 elapsed=53s
+[w1] game 3 vs mined_3: reward0=1 decisions=152 elapsed=67s
+[w0] game 3 vs mined_3: reward0=1 decisions=146 elapsed=71s
+[w1] game 4 vs mined_4: reward0=-1 decisions=127 elapsed=82s
+[w0] game 4 vs mined_4: reward0=1 decisions=150 elapsed=88s
+[w1] game 5 vs mined_5: reward0=1 decisions=126 elapsed=97s
+[w0] game 5 vs mined_5: reward0=1 decisions=137 elapsed=104s
+[w1] game 6 vs mined_6: reward0=-1 decisions=107 elapsed=110s
+[w0] game 6 vs mined_6: reward0=-1 decisions=156 elapsed=123s
+[w1] game 7 vs mined_7: reward0=1 decisions=146 elapsed=127s
+[w1] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w1_1784594784210.npz (1075 samples)
+[w0] game 7 vs mined_7: reward0=1 decisions=106 elapsed=135s
+[w0] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w0_1784594792565.npz (1143 samples)
+[w1] game 8 vs mined_8: reward0=-1 decisions=125 elapsed=142s
+[w0] game 8 vs mined_8: reward0=-1 decisions=158 elapsed=155s
+[w1] game 9 vs mined_9: reward0=1 decisions=149 elapsed=159s
+[w0] game 9 vs mined_9: reward0=-1 decisions=136 elapsed=171s
+[w1] game 10 vs mined_10: reward0=-1 decisions=150 elapsed=177s
+[w0] game 10 vs mined_10: reward0=1 decisions=93 elapsed=182s
+[w1] game 11 vs mined_11: reward0=-1 decisions=96 elapsed=189s
+[w0] game 11 vs mined_11: reward0=-1 decisions=123 elapsed=197s
+[w0] game 12 vs mined_0: reward0=1 decisions=34 elapsed=200s
+[w1] game 12 vs mined_0: reward0=1 decisions=123 elapsed=203s
+[w1] game 13 vs mined_1: reward0=1 decisions=152 elapsed=221s
+[w0] game 13 vs mined_1: reward0=1 decisions=182 elapsed=222s
+[w0] game 14 vs mined_2: reward0=1 decisions=120 elapsed=236s
+[w0] game 15 vs mined_3: reward0=1 decisions=22 elapsed=239s
+[w0] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w0_1784594896209.npz (868 samples)
+[w1] game 14 vs mined_2: reward0=-1 decisions=153 elapsed=239s
+[w1] game 15 vs mined_3: reward0=-1 decisions=141 elapsed=256s
+[w1] wrote C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_exit\shard_w1_1784594913765.npz (1089 samples)
+done
+>> C:\Users\megha\AppData\Local\Programs\Python\Python312\python.exe C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\train_bc.py --data C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\data_combined --epochs 10 --batch 256 --out C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen2.npz
+loaded 9 shards, 120572 samples
+train 102487 / val 18085
+ep 1/10  train p=1.6810 v=0.9798  | val p=1.5083 v=0.9687 top1=48.4%
+ep 2/10  train p=1.4912 v=0.8936  | val p=1.4993 v=0.8041 top1=48.2%
+ep 3/10  train p=1.4678 v=0.7984  | val p=1.4635 v=0.7992 top1=49.5%
+ep 4/10  train p=1.4363 v=0.6907  | val p=1.4218 v=0.6618 top1=50.4%
+ep 5/10  train p=1.4089 v=0.6214  | val p=1.4081 v=0.6029 top1=50.9%
+ep 6/10  train p=1.3877 v=0.5687  | val p=1.3847 v=0.5422 top1=51.2%
+ep 7/10  train p=1.3682 v=0.5220  | val p=1.3643 v=0.5130 top1=51.9%
+ep 8/10  train p=1.3481 v=0.4754  | val p=1.3511 v=0.4764 top1=52.5%
+ep 9/10  train p=1.3308 v=0.4397  | val p=1.3439 v=0.4540 top1=52.7%
+ep 10/10  train p=1.3206 v=0.4195  | val p=1.3434 v=0.4505 top1=52.7%
+
+==== GATES ====
+policy top-1 vs search : net 52.7%  |  heuristic prior 36.2%
+value MAE              : net 0.443  |  predict-mean baseline 0.992
+policy gate: PASS   value gate: PASS
+exported C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen2.npz
+deployed C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\train\model_gen2.npz -> submission/model.npz
+
+ExIt loop complete. A/B the result before shipping:
+  py tools/ab_test.py submission agents/v1_frozen 12

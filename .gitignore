@@ -1,0 +1,35 @@
+data/replays_ladder/
+data/replays_ours_v1/
+data/replays_ours_v3/
+data/replays_iso/
+data/leaderboard/
+data/official_sdk/
+*.zip
+
+track1_search/train/data/
+track1_search/train/data_bc/
+track1_search/train/data_exit/
+track1_search/train/data_final/
+track1_search/train/data_own/
+track1_search/train/models_archive/
+track3_oracle/data/
+
+submission.tar.gz
+*.tar.gz
+__pycache__/
+*.pyc
+
+.kaggle/
+kaggle.json
+*.token
+
+# Engine binaries: licensed "PTCG-ABC-Competition-Use-Only", do NOT redistribute.
+# Obtain from the Kaggle competition page, or from kaggle-environments:
+#   kaggle_environments/envs/cabt/cg/
+**/cg/*.dll
+**/cg/*.so
+**/cg/libcg*
+**/cg/api.py
+**/cg/sim.py
+**/cg/game.py
+**/cg/utils.py

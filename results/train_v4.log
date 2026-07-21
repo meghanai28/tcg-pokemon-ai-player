@@ -1,0 +1,21 @@
+loaded 16 shards, 136901 samples
+distilling from train/model_gen2.npz: targets blended 50/50
+train 116366 / val 20535
+ep 1/12  train p=1.6491 v=0.6390  | val p=1.5048 v=0.6065 top1=48.3%
+ep 2/12  train p=1.4764 v=0.5510  | val p=1.4777 v=0.6238 top1=48.5%
+ep 3/12  train p=1.4470 v=0.4500  | val p=1.4395 v=0.3628 top1=49.3%
+ep 4/12  train p=1.4185 v=0.3284  | val p=1.3985 v=0.2844 top1=50.4%
+ep 5/12  train p=1.3933 v=0.2528  | val p=1.3818 v=0.2090 top1=51.0%
+ep 6/12  train p=1.3782 v=0.1986  | val p=1.3724 v=0.1850 top1=51.8%
+ep 7/12  train p=1.3671 v=0.1681  | val p=1.3660 v=0.1602 top1=51.8%
+ep 8/12  train p=1.3587 v=0.1396  | val p=1.3562 v=0.1335 top1=52.5%
+ep 9/12  train p=1.3505 v=0.1164  | val p=1.3534 v=0.1176 top1=52.5%
+ep 10/12  train p=1.3443 v=0.1010  | val p=1.3489 v=0.1043 top1=52.8%
+ep 11/12  train p=1.3399 v=0.0904  | val p=1.3473 v=0.0995 top1=53.0%
+ep 12/12  train p=1.3369 v=0.0854  | val p=1.3470 v=0.0986 top1=52.9%
+
+==== GATES ====
+policy top-1 vs search : net 52.9%  |  heuristic prior 35.4%
+value MAE              : net 0.199  |  predict-mean baseline 0.757
+policy gate: PASS   value gate: PASS
+exported train/model_v4.npz

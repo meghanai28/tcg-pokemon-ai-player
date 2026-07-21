@@ -1,0 +1,18 @@
+warm start from model_v4.npz: 50 tensors loaded
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+iter 1/8: 1444 decisions, selfplay winrate 40%, loss 0.5375, mean gate 0.484, 48s
+iter 2/8: 1559 decisions, selfplay winrate 20%, loss 0.7096, mean gate 0.480, 45s
+iter 3/8: 1492 decisions, selfplay winrate 10%, loss 0.7549, mean gate 0.465, 43s
+iter 4/8: 1610 decisions, selfplay winrate 40%, loss 0.4684, mean gate 0.483, 47s
+iter 5/8: 1524 decisions, selfplay winrate 30%, loss 0.6905, mean gate 0.488, 45s
+iter 6/8: 1492 decisions, selfplay winrate 30%, loss 1.0075, mean gate 0.487, 46s
+iter 7/8: 1578 decisions, selfplay winrate 10%, loss 0.6519, mean gate 0.484, 78s
+iter 8/8: 1341 decisions, selfplay winrate 20%, loss 0.8372, mean gate 0.466, 63s
+exported track4_policygrad/model_dg.npz
+
+CHECKPOINT: compare raw policies head to head, e.g.
+  py track4_policygrad/eval_policy.py --a track4_policygrad/model_dg.npz --b C:\Users\megha\OneDrive\Desktop\pokemon_benchmark\claude-tcg\track1_search\train\model_v4.npz --games 40

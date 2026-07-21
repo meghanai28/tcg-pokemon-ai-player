@@ -1,0 +1,38 @@
+training Q from scratch (random init)
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+iter 1/25: buffer 904, winrate 30%, eps 0.17, loss 1.4950, 18s
+iter 2/25: buffer 2040, winrate 50%, eps 0.16, loss 1.5158, 18s
+iter 3/25: buffer 3044, winrate 50%, eps 0.16, loss 1.4782, 16s
+iter 4/25: buffer 4100, winrate 50%, eps 0.15, loss 1.5132, 19s
+iter 5/25: buffer 5234, winrate 70%, eps 0.14, loss 1.5002, 24s
+iter 6/25: buffer 6659, winrate 40%, eps 0.14, loss 1.4779, 27s
+iter 7/25: buffer 7846, winrate 60%, eps 0.13, loss 1.5280, 23s
+iter 8/25: buffer 9104, winrate 50%, eps 0.13, loss 1.4863, 24s
+iter 9/25: buffer 10010, winrate 30%, eps 0.12, loss 1.4799, 18s
+iter 10/25: buffer 11330, winrate 60%, eps 0.11, loss 1.4681, 26s
+iter 11/25: buffer 12373, winrate 50%, eps 0.11, loss 1.5020, 21s
+iter 12/25: buffer 13890, winrate 40%, eps 0.10, loss 1.5077, 31s
+  game 1 had no reward (statuses ['INVALID', 'DONE'])
+iter 13/25: buffer 15063, winrate 22%, eps 0.10, loss 1.5016, 27s
+iter 14/25: buffer 16482, winrate 40%, eps 0.09, loss 1.5008, 32s
+iter 15/25: buffer 17829, winrate 70%, eps 0.08, loss 1.4736, 27s
+iter 16/25: buffer 19011, winrate 60%, eps 0.08, loss 1.5500, 28s
+  game 3 had no reward (statuses ['INVALID', 'DONE'])
+iter 17/25: buffer 20205, winrate 67%, eps 0.07, loss 1.4970, 31s
+  game 1 had no reward (statuses ['INVALID', 'DONE'])
+iter 18/25: buffer 20998, winrate 44%, eps 0.06, loss 1.5044, 20s
+iter 19/25: buffer 21507, winrate 80%, eps 0.06, loss 1.4911, 12s
+iter 20/25: buffer 22039, winrate 80%, eps 0.05, loss 1.5052, 11s
+iter 21/25: buffer 22636, winrate 70%, eps 0.04, loss 1.4985, 13s
+iter 22/25: buffer 23263, winrate 50%, eps 0.04, loss 1.5384, 14s
+iter 23/25: buffer 23775, winrate 50%, eps 0.03, loss 1.5000, 12s
+iter 24/25: buffer 24208, winrate 40%, eps 0.03, loss 1.4961, 11s
+iter 25/25: buffer 24660, winrate 50%, eps 0.02, loss 1.4910, 11s
+exported track2_dmc/model_dmc.npz
+
+CHECKPOINT (the bar is the HEURISTIC, not Track 1 search):
+  py track4_policygrad/eval_policy.py --a track2_dmc/model_dmc.npz --heuristic --games 40

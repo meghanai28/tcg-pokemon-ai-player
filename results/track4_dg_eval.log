@@ -1,0 +1,12 @@
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+  10/30: 5W 5L
+  20/30: 11W 9L
+  30/30: 18W 12L
+
+A=model_dg.npz vs model_v4.npz
+A: 18W 12L  = 60.0% +/- 18% (95% CI)
+VERDICT: inconclusive at this sample size

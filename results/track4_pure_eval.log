@@ -1,0 +1,12 @@
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+  10/30: 3W 7L
+  20/30: 7W 13L
+  30/30: 8W 22L
+
+A=model_dg_pure.npz vs heuristic policy
+A: 8W 22L  = 26.7% +/- 16% (95% CI)
+VERDICT: A is worse (significant)

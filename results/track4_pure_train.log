@@ -1,0 +1,16 @@
+PURE RL: random initialisation, no behaviour cloning warm start
+PURE RL: heuristic scorer disabled (ordering + fallback)
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+iter 1/90: 1448 decisions, selfplay winrate 70%, loss 1.0121, steps 184, gate 0.500, 91s
+iter 2/90: 1696 decisions, selfplay winrate 40%, loss 0.9510, steps 212, gate 0.495, 90s
+iter 3/90: 1666 decisions, selfplay winrate 40%, loss 0.9901, steps 212, gate 0.495, 84s
+iter 4/90: 1552 decisions, selfplay winrate 50%, loss 0.7407, steps 196, gate 0.484, 124s
+iter 5/90: 1627 decisions, selfplay winrate 30%, loss 0.3966, steps 204, gate 0.487, 61s
+iter 6/90: 1677 decisions, selfplay winrate 30%, loss 0.6808, steps 212, gate 0.492, 45s
+iter 7/90: 1704 decisions, selfplay winrate 60%, loss 0.9362, steps 216, gate 0.493, 32s
+iter 8/90: 1588 decisions, selfplay winrate 30%, loss 0.7319, steps 200, gate 0.488, 32s
+iter 9/90: 1543 decisions, selfplay winrate 20%, loss 0.3981, steps 196, gate 0.496, 30s
