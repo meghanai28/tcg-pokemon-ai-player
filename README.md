@@ -1,4 +1,4 @@
-# PokéSearch — Pokémon TCG AI Battle Challenge
+# pokemon TCG AI Battle Challenge
 
 Agents for the Kaggle competition
 [`pokemon-tcg-ai-battle`](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle).
@@ -7,10 +7,10 @@ Four tracks, in order of maturity. Track 1 is on the ladder. Tracks 2 to 4 are
 designed and justified but not implemented.
 
 ```
-track1_search/     determinized search + learned priors   LIVE ON LADDER
-track2_dmc/        Deep Monte Carlo, no search            design only
-track3_oracle/     oracle guided hidden info learning     design only
-track4_policygrad/ Delightful Gradient policy gradient    design only
+track1_search/     determinized search + learned priors   
+track2_dmc/        Deep Monte Carlo, no search            
+track3_oracle/     oracle guided hidden info learning     
+track4_policygrad/ Delightful Gradient policy gradient    
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
@@ -71,6 +71,39 @@ The honest summary is that **search is doing the work** and the network has
 earned only the cheap role (move ordering). Whether even that helps is being
 measured right now by a live isolation experiment: two submissions identical
 except for the presence of `model.npz`.
+
+---
+
+## Real ladder results
+
+Every number below is a settled or in progress public score from the Kaggle
+ladder, not a local estimate. Submissions seed at 600 and overshoot before
+converging, so early readings are unreliable.
+
+| Submission | What it is | Score |
+|---|---|---|
+| ISO-A | search + network root priors | **819.8** |
+| ISO-B | identical, no network at all | 775.7 |
+| v4 | ISO-A base, model retrained on our own ladder games | 754.9 |
+| v1 | first working agent, search + network priors | 739.2 |
+| v3 | v1 plus 5 changes that regressed | 603.6 |
+
+ISO-A and ISO-B are a controlled experiment: byte identical except for the
+presence of `model.npz`. They were submitted seconds apart so they seed in the
+same window against the same pool, which makes the difference between them
+attributable to the network and nothing else.
+
+That experiment has not been kind to quick conclusions. ISO-B led for several
+hours and peaked at 902.7, which looked like clear evidence the network was
+dead weight. As both converged the ordering reversed and ISO-A is now ahead.
+The honest current read is that the network probably helps a little in the
+cheap role, and that anyone reading either arm before convergence would have
+concluded the opposite of the truth.
+
+v3 is the cautionary tale. It bundled five changes that together won a local
+A/B 9 to 3, then regressed on the ladder from a 65 percent win rate to 40
+percent. Reverting the two riskiest changes produced v4. Local evaluation
+inverted a real result by roughly 120 rating points.
 
 ---
 
