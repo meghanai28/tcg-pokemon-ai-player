@@ -1,5 +1,6 @@
 # pokemon TCG AI Battle Challenge
 
+readme outdated.. 
 Agents for the Kaggle competition
 [`pokemon-tcg-ai-battle`](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle).
 
