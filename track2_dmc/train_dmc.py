@@ -133,9 +133,13 @@ def main():
     ap.add_argument("--games", type=int, default=12)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--epochs", type=int, default=2, help="passes over buffer")
+    ap.add_argument("--max-steps", type=int, default=400,
+                    help="cap on gradient steps per iteration")
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--epsilon", type=float, default=0.15)
     ap.add_argument("--scratch", action="store_true", help="no warm start")
+    ap.add_argument("--anchor", type=float, default=0.3,
+                    help="pull untaken option values toward the state value")
     ap.add_argument("--init", default=os.path.join(ROOT, "track1_search", "train", "model_v4.npz"))
     ap.add_argument("--out", default=os.path.join(HERE, "model_dmc.npz"))
     a = ap.parse_args()
@@ -166,8 +170,12 @@ def main():
         model.train()
         idx = list(range(len(buffer)))
         rng.shuffle(idx)
-        # cover the whole buffer several times instead of 8 minibatches
-        idx = idx * a.epochs
+        # Bounded work per iteration. Sweeping the whole buffer made each
+        # iteration grow without limit (64s -> 217s by iteration 17, heading
+        # for ~10 min once the buffer hit its cap). Cap the gradient steps so
+        # wall clock per iteration stays flat while still doing plenty of
+        # updates, which was the original problem.
+        idx = (idx * a.epochs)[:a.max_steps * a.batch]
         tot = 0.0
         nb = 0
         for s in range(0, len(idx), a.batch):
@@ -186,6 +194,20 @@ def main():
             q_taken = q[torch.arange(len(chunk)), pos]
             # Deep Monte Carlo: regress Q(s,a) toward the realised return.
             loss = ((q_taken - z) ** 2).mean() + 0.5 * ((v - z) ** 2).mean()
+            if a.anchor > 0:
+                # Anchor UNTAKEN options toward the state value. Only the taken
+                # action gets a return label, so every other option's output is
+                # otherwise unconstrained and free to drift; ranking by argmax
+                # over unconstrained outputs is meaningless. Training offline on
+                # 136k logged decisions failed exactly this way (10.6 percent
+                # top-1, and 37.5 percent in the A/B) because logged data never
+                # shows the alternatives. This keeps them calibrated so the
+                # ordering stays sane where exploration has not reached.
+                valid = mask > 0.5
+                anchor_t = v.detach()[:, None].expand_as(q)
+                diff = (q - anchor_t) ** 2 * valid
+                diff[torch.arange(len(chunk)), pos] = 0.0
+                loss = loss + a.anchor * (diff.sum() / valid.sum().clamp(min=1))
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()

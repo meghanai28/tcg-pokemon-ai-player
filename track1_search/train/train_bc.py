@@ -58,6 +58,12 @@ def main():
     ap.add_argument("--heads", type=int, default=4)
     ap.add_argument("--distill", default=None,
                     help="teacher .npz; student also matches its outputs")
+    ap.add_argument("--dmc", action="store_true",
+                    help="Deep Monte Carlo: regress Q(s, a_taken) toward the "
+                         "realised outcome instead of cross-entropy against a "
+                         "target distribution. Uses every labelled decision we "
+                         "have (pro replays, self play, ExIt, our own ladder "
+                         "games) rather than only fresh self play.")
     a = ap.parse_args()
     import model as _m
     _m.D_MODEL, _m.N_LAYERS, _m.N_HEADS, _m.D_FF = a.dim, a.layers, a.heads, 2 * a.dim
@@ -123,10 +129,18 @@ def main():
             b = order[s * a.batch:(s + 1) * a.batch]
             kind, card, scal, mask, ctx, styp, pi, z = (t[b] for t in tr)
             logits, v = model(kind, card, scal, mask, ctx, styp)
-            logp = torch.log_softmax(logits, dim=-1)
-            # cross-entropy against the search distribution (masked positions
-            # carry zero target mass, so they contribute nothing)
-            lp = -(pi * logp).sum(-1).mean()
+            if a.dmc:
+                # Q head: the action actually taken is argmax(pi) (exactly the
+                # played move for replay data, the most visited for search
+                # data). Regress its Q toward the realised return.
+                taken = pi.argmax(-1)
+                q_taken = logits[torch.arange(len(taken)), taken]
+                lp = ((q_taken - z) ** 2).mean()
+            else:
+                logp = torch.log_softmax(logits, dim=-1)
+                # cross-entropy against the search distribution (masked
+                # positions carry zero target mass, so contribute nothing)
+                lp = -(pi * logp).sum(-1).mean()
             lv = Fn.mse_loss(v, z)
             loss = lp + 0.5 * lv
             opt.zero_grad()

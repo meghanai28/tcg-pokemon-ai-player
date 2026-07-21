@@ -1,0 +1,22 @@
+loaded 16 shards, 136901 samples
+train 116366 / val 20535
+ep 1/14  train p=0.9798 v=0.9854  | val p=2.9833 v=0.9733 top1=13.4%
+ep 2/14  train p=0.8790 v=0.8951  | val p=3.2288 v=0.8266 top1=2.0%
+ep 3/14  train p=0.7986 v=0.7831  | val p=3.1496 v=0.7310 top1=9.4%
+ep 4/14  train p=0.7311 v=0.7183  | val p=3.2358 v=0.6798 top1=4.8%
+ep 5/14  train p=0.6526 v=0.6467  | val p=3.1311 v=0.6262 top1=12.5%
+ep 6/14  train p=0.6086 v=0.6032  | val p=3.1581 v=0.6628 top1=12.1%
+ep 7/14  train p=0.5643 v=0.5621  | val p=3.2153 v=0.5448 top1=10.2%
+ep 8/14  train p=0.5140 v=0.5136  | val p=3.1323 v=0.5095 top1=11.0%
+ep 9/14  train p=0.4619 v=0.4632  | val p=3.1801 v=0.4589 top1=9.6%
+ep 10/14  train p=0.4111 v=0.4133  | val p=3.1970 v=0.4038 top1=8.5%
+ep 11/14  train p=0.3558 v=0.3594  | val p=3.2098 v=0.3698 top1=9.8%
+ep 12/14  train p=0.3066 v=0.3108  | val p=3.1595 v=0.3341 top1=10.7%
+ep 13/14  train p=0.2741 v=0.2799  | val p=3.1615 v=0.3183 top1=10.9%
+ep 14/14  train p=0.2570 v=0.2631  | val p=3.1682 v=0.3128 top1=10.6%
+
+==== GATES ====
+policy top-1 vs search : net 10.6%  |  heuristic prior 37.4%
+value MAE              : net 0.293  |  predict-mean baseline 0.994
+policy gate: FAIL   value gate: PASS
+exported track1_search/train/model_dmc_offline.npz

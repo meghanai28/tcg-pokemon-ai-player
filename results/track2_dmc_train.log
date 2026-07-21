@@ -4,34 +4,109 @@ Loading environment llm_20_questions failed: No module named 'kaggle_environment
 Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
 Loading environment open_spiel_env failed: No module named 'pokerkit'
 Loading environment werewolf failed: No module named 'pydantic'
-iter 1/25: buffer 904, winrate 30%, eps 0.17, loss 1.4950, 18s
-iter 2/25: buffer 2040, winrate 50%, eps 0.16, loss 1.5158, 18s
-iter 3/25: buffer 3044, winrate 50%, eps 0.16, loss 1.4782, 16s
-iter 4/25: buffer 4100, winrate 50%, eps 0.15, loss 1.5132, 19s
-iter 5/25: buffer 5234, winrate 70%, eps 0.14, loss 1.5002, 24s
-iter 6/25: buffer 6659, winrate 40%, eps 0.14, loss 1.4779, 27s
-iter 7/25: buffer 7846, winrate 60%, eps 0.13, loss 1.5280, 23s
-iter 8/25: buffer 9104, winrate 50%, eps 0.13, loss 1.4863, 24s
-iter 9/25: buffer 10010, winrate 30%, eps 0.12, loss 1.4799, 18s
-iter 10/25: buffer 11330, winrate 60%, eps 0.11, loss 1.4681, 26s
-iter 11/25: buffer 12373, winrate 50%, eps 0.11, loss 1.5020, 21s
-iter 12/25: buffer 13890, winrate 40%, eps 0.10, loss 1.5077, 31s
-  game 1 had no reward (statuses ['INVALID', 'DONE'])
-iter 13/25: buffer 15063, winrate 22%, eps 0.10, loss 1.5016, 27s
-iter 14/25: buffer 16482, winrate 40%, eps 0.09, loss 1.5008, 32s
-iter 15/25: buffer 17829, winrate 70%, eps 0.08, loss 1.4736, 27s
-iter 16/25: buffer 19011, winrate 60%, eps 0.08, loss 1.5500, 28s
+iter 1/90: steps 37, buffer 1172, winrate 40%, eps 0.17, loss 1.4986, 23s
+iter 2/90: steps 72, buffer 2289, winrate 10%, eps 0.17, loss 1.4457, 17s
+  game 0 had no reward (statuses ['INVALID', 'DONE'])
+iter 3/90: steps 108, buffer 3432, winrate 22%, eps 0.17, loss 1.2210, 36s
+iter 4/90: steps 134, buffer 4260, winrate 30%, eps 0.16, loss 1.0331, 26s
+iter 5/90: steps 151, buffer 4818, winrate 30%, eps 0.16, loss 1.0182, 22s
+iter 6/90: steps 179, buffer 5713, winrate 30%, eps 0.16, loss 0.9462, 34s
+iter 7/90: steps 213, buffer 6788, winrate 80%, eps 0.16, loss 1.0679, 42s
+iter 8/90: steps 235, buffer 7499, winrate 20%, eps 0.16, loss 0.9115, 38s
+iter 9/90: steps 251, buffer 8001, winrate 60%, eps 0.16, loss 0.9966, 36s
+iter 10/90: steps 276, buffer 8815, winrate 40%, eps 0.15, loss 0.9026, 45s
+iter 11/90: steps 305, buffer 9739, winrate 80%, eps 0.15, loss 0.8583, 48s
+iter 12/90: steps 328, buffer 10474, winrate 70%, eps 0.15, loss 0.8318, 49s
+iter 13/90: steps 359, buffer 11477, winrate 70%, eps 0.15, loss 0.8223, 58s
+iter 14/90: steps 390, buffer 12457, winrate 40%, eps 0.15, loss 0.7930, 58s
+iter 15/90: steps 400, buffer 13420, winrate 50%, eps 0.15, loss 0.7213, 60s
+iter 16/90: steps 400, buffer 14668, winrate 20%, eps 0.14, loss 0.6656, 63s
+iter 17/90: steps 400, buffer 15930, winrate 40%, eps 0.14, loss 0.5736, 67s
+iter 18/90: steps 400, buffer 17343, winrate 80%, eps 0.14, loss 0.6293, 68s
+iter 19/90: steps 400, buffer 18595, winrate 40%, eps 0.14, loss 0.5621, 67s
+iter 20/90: steps 400, buffer 19985, winrate 60%, eps 0.14, loss 0.6083, 70s
   game 3 had no reward (statuses ['INVALID', 'DONE'])
-iter 17/25: buffer 20205, winrate 67%, eps 0.07, loss 1.4970, 31s
+iter 21/90: steps 400, buffer 21198, winrate 11%, eps 0.14, loss 0.5823, 67s
+iter 22/90: steps 400, buffer 22555, winrate 40%, eps 0.13, loss 0.5599, 70s
+iter 23/90: steps 400, buffer 23786, winrate 50%, eps 0.13, loss 0.4811, 66s
+iter 24/90: steps 400, buffer 25226, winrate 40%, eps 0.13, loss 0.5033, 71s
+iter 25/90: steps 400, buffer 26589, winrate 70%, eps 0.13, loss 0.5186, 66s
+iter 26/90: steps 400, buffer 27956, winrate 90%, eps 0.13, loss 0.5246, 70s
+iter 27/90: steps 400, buffer 29219, winrate 50%, eps 0.13, loss 0.5088, 66s
+  game 8 had no reward (statuses ['INVALID', 'DONE'])
+iter 28/90: steps 400, buffer 30120, winrate 44%, eps 0.12, loss 0.4562, 63s
+iter 29/90: steps 400, buffer 31389, winrate 40%, eps 0.12, loss 0.4585, 68s
+iter 30/90: steps 400, buffer 32637, winrate 40%, eps 0.12, loss 0.4442, 63s
+iter 31/90: steps 400, buffer 34188, winrate 40%, eps 0.12, loss 0.4584, 75s
+iter 32/90: steps 400, buffer 35423, winrate 50%, eps 0.12, loss 0.4566, 66s
+iter 33/90: steps 400, buffer 36415, winrate 60%, eps 0.12, loss 0.4479, 63s
+iter 34/90: steps 400, buffer 37611, winrate 40%, eps 0.11, loss 0.4370, 66s
+iter 35/90: steps 400, buffer 38944, winrate 40%, eps 0.11, loss 0.4517, 70s
+iter 36/90: steps 400, buffer 40121, winrate 40%, eps 0.11, loss 0iter 37/90: iter 37/90: steps 400, buffer 41242, winrate 60%, eps 0.11, loss 0.4iter 38/90: steps 1399, buffer 44750, winrate 50%, eps 0.11, loss 0.1613, 173s
+iter 39/90: steps 1431, buffer 45790, winrate 40%, eps 0.11, loss 0.1555, 166s
+iter 40/90: steps 1463, buffer 46794, winrate 30%, eps 0.10, loss 0.1559, 175s
+iter 41/90: steps 1505, buffer 48139, winrate 50%, eps 0.10, loss 0.1555, 447s
+iter 42/90: steps 1542, buffer 49339, winrate 40%, eps 0.10, loss 0.1468, 472s
+iter 43/90: steps 1580, buffer 50546, winrate 60%, eps 0.10, loss 0.1436, 492s
+  game 8 had no reward (statuses ['INVALID', 'DONE'])
+iter 44/90: steps 1604, buffer 51324, winrate 22%, eps 0.10, loss 0.1258, 439s
+iter 45/90: steps 1632, buffer 52216, winrate 40%, eps 0.10, loss 0.1156, 454s
+iter 46/90: steps 1672, buffer 53479, winrate 50%, eps 0.09, loss 0.1190, 551s
+  game 4 had no reward (statuses ['INVALID', 'DONE'])
+iter 47/90: steps 1694, buffer 54183, winrate 44%, eps 0.09, loss 0.1187, 420s
+iter 48/90: steps 1733, buffer 55447, winrate 30%, eps 0.09, loss 0.1060, 449s
+iter 49/90: steps 1766, buffer 56490, winrate 40%, eps 0.09, loss 0.1123, 473s
+iter 50/90: steps 1801, buffer 57613, winrate 40%, eps 0.09, loss 0.1087, 418s
+iter 51/90: steps 1835, buffer 58711, winrate 30%, eps 0.09, loss 0.1079, 471s
+iter 52/90: steps 1875, buffer 60000, winrate 20%, eps 0.08, loss 0.1034, 496s
+iter 53/90: steps 1875, buffer 60000, winrate 30%, eps 0.08, loss 0.0993, 491s
+iter 54/90: steps 1875, buffer 60000, winrate 70%, eps 0.08, loss 0.0928, 496s
+iter 55/90: steps 1875, buffer 60000, winrate 70%, eps 0.08, loss 0.1097, 436s
+iter 56/90: steps 1875, buffer 60000, winrate 80%, eps 0.08, loss 0.1023, 404s
+iter 57/90: steps 1875, buffer 60000, winrate 60%, eps 0.08, loss 0.1002, 415s
+  game 9 had no reward (statuses ['INVALID', 'DONE'])
+iter 58/90: steps 1875, buffer 60000, winrate 44%, eps 0.07, loss 0.1043, 419s
+iter 59/90: steps 1875, buffer 60000, winrate 40%, eps 0.07, loss 0.0940, 403s
+iter 60/90: steps 1875, buffer 60000, winrate 30%, eps 0.07, loss 0.0936, 406s
+  game 4 had no reward (statuses ['INVALID', 'DONE'])
+iter 61/90: steps 1875, buffer 60000, winrate 33%, eps 0.07, loss 0.0840, 403s
+iter 62/90: steps 1875, buffer 60000, winrate 50%, eps 0.07, loss 0.0779, 306s
+iter 63/90: steps 1875, buffer 60000, winrate 50%, eps 0.07, loss 0.0750, 254s
+iter 64/90: steps 1875, buffer 60000, winrate 20%, eps 0.06, loss 0.0845, 497s
+  game 7 had no reward (statuses ['INVALID', 'DONE'])
+iter 65/90: steps 1875, buffer 60000, winrate 33%, eps 0.06, loss 0.0820, 405s
+iter 66/90: steps 1875, buffer 60000, winrate 20%, eps 0.06, loss 0.0816, 406s
+  game 8 had no reward (statuses ['INVALID', 'DONE'])
+iter 67/90: steps 1875, buffer 60000, winrate 33%, eps 0.06, loss 0.0740, 399s
+iter 68/90: steps 1875, buffer 60000, winrate 20%, eps 0.06, loss 0.0762, 411s
+iter 69/90: steps 1875, buffer 60000, winrate 70%, eps 0.06, loss 0.0744, 276s
+iter 70/90: steps 1875, buffer 60000, winrate 60%, eps 0.05, loss 0.0648, 191s
+  game 7 had no reward (statuses ['INVALID', 'DONE'])
+iter 71/90: steps 1875, buffer 60000, winrate 44%, eps 0.05, loss 0.0612, 186s
+iter 72/90: steps 1875, buffer 60000, winrate 30%, eps 0.05, loss 0.0592, 183s
+iter 73/90: steps 1875, buffer 60000, winrate 30%, eps 0.05, loss 0.0642, 164s
+iter 74/90: steps 1875, buffer 60000, winrate 40%, eps 0.05, loss 0.0683, 161s
+iter 75/90: steps 1875, buffer 60000, winrate 60%, eps 0.05, loss 0.0598, 166s
+iter 76/90: steps 1875, buffer 60000, winrate 40%, eps 0.04, loss 0.0615, 163s
+iter 77/90: steps 1875, buffer 60000, winrate 40%, eps 0.04, loss 0.0677, 162s
+iter 78/90: steps 1875, buffer 60000, winrate 50%, eps 0.04, loss 0.0683, 159s
+  game 0 had no reward (statuses ['INVALID', 'DONE'])
+iter 79/90: steps 1875, buffer 60000, winrate 33%, eps 0.04, loss 0.0574, 158s
+iter 80/90: steps 1875, buffer 60000, winrate 20%, eps 0.04, loss 0.0569, 151s
+iter 81/90: steps 1875, buffer 60000, winrate 60%, eps 0.04, loss 0.0600, 149s
   game 1 had no reward (statuses ['INVALID', 'DONE'])
-iter 18/25: buffer 20998, winrate 44%, eps 0.06, loss 1.5044, 20s
-iter 19/25: buffer 21507, winrate 80%, eps 0.06, loss 1.4911, 12s
-iter 20/25: buffer 22039, winrate 80%, eps 0.05, loss 1.5052, 11s
-iter 21/25: buffer 22636, winrate 70%, eps 0.04, loss 1.4985, 13s
-iter 22/25: buffer 23263, winrate 50%, eps 0.04, loss 1.5384, 14s
-iter 23/25: buffer 23775, winrate 50%, eps 0.03, loss 1.5000, 12s
-iter 24/25: buffer 24208, winrate 40%, eps 0.03, loss 1.4961, 11s
-iter 25/25: buffer 24660, winrate 50%, eps 0.02, loss 1.4910, 11s
+iter 82/90: steps 1875, buffer 60000, winrate 33%, eps 0.03, loss 0.0565, 148s
+  game 7 had no reward (statuses ['INVALID', 'DONE'])
+iter 83/90: steps 1875, buffer 60000, winrate 56%, eps 0.03, loss 0.0528, 145s
+iter 84/90: steps 1875, buffer 60000, winrate 50%, eps 0.03, loss 0.0627, 159s
+  game 3 had no reward (statuses ['INVALID', 'DONE'])
+iter 85/90: steps 1875, buffer 60000, winrate 44%, eps 0.03, loss 0.0484, 122s
+  game 5 had no reward (statuses ['INVALID', 'DONE'])
+iter 86/90: steps 1875, buffer 60000, winrate 44%, eps 0.03, loss 0.0545, 129s
+iter 87/90: steps 1875, buffer 60000, winrate 50%, eps 0.03, loss 0.0548, 134s
+iter 88/90: steps 1875, buffer 60000, winrate 30%, eps 0.02, loss 0.0601, 132s
+iter 89/90: steps 1875, buffer 60000, winrate 40%, eps 0.02, loss 0.0531, 132s
+iter 90/90: steps 1875, buffer 60000, winrate 30%, eps 0.02, loss 0.0520, 133s
 exported track2_dmc/model_dmc.npz
 
 CHECKPOINT (the bar is the HEURISTIC, not Track 1 search):

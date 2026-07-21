@@ -3,10 +3,11 @@ Loading environment llm_20_questions failed: No module named 'kaggle_environment
 Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
 Loading environment open_spiel_env failed: No module named 'pokerkit'
 Loading environment werewolf failed: No module named 'pydantic'
-  10/30: 1W 9L
-  20/30: 2W 18L
-  30/30: 4W 26L
+  10/40: 1W 9L
+  20/40: 2W 18L
+  30/40: 3W 27L
+  40/40: 3W 37L
 
 A=model_dmc.npz vs heuristic policy
-A: 4W 26L  = 13.3% +/- 12% (95% CI)
+A: 3W 37L  = 7.5% +/- 8% (95% CI)
 VERDICT: A is worse (significant)

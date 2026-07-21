@@ -1,0 +1,79 @@
+warm start: 50 tensors from model_v4.npz
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+iter 1/60: steps 33, buffer 1055, winrate 40%, eps 0.17, loss 10.8149, 16s
+iter 2/60: steps 76, buffer 2415, winrate 60%, eps 0.17, loss 0.8953, 23s
+  game 0 had no reward (statuses ['INVALID', 'DONE'])
+iter 3/60: steps 102, buffer 3249, winrate 67%, eps 0.16, loss 0.6788, 19s
+iter 4/60: steps 146, buffer 4660, winrate 40%, eps 0.16, loss 0.7999, 26s
+iter 5/60: steps 181, buffer 5780, winrate 60%, eps 0.16, loss 0.5955, 26s
+iter 6/60: steps 225, buffer 7177, winrate 50%, eps 0.16, loss 0.4562, 34s
+iter 7/60: steps 266, buffer 8489, winrate 70%, eps 0.15, loss 0.3898, 36s
+iter 8/60: steps 299, buffer 9549, winrate 50%, eps 0.15, loss 0.4381, 33s
+iter 9/60: steps 342, buffer 10913, winrate 10%, eps 0.15, loss 0.4460, 41s
+iter 10/60: steps 371, buffer 11856, winrate 40%, eps 0.15, loss 0.2867, 38s
+iter 11/60: steps 400, buffer 13045, winrate 20%, eps 0.14, loss 0.2402, 43s
+iter 12/60: steps 400, buffer 14509, winrate 30%, eps 0.14, loss 0.2836, 42s
+iter 13/60: steps 400, buffer 15693, winrate 60%, eps 0.14, loss 0.2517, 43s
+iter 14/60: steps 400, buffer 16940, winrate 20%, eps 0.14, loss 0.2570, 43s
+iter 15/60: steps 400, buffer 18015, winrate 70%, eps 0.13, loss 0.2067, 38s
+iter 16/60: steps 400, buffer 19190, winrate 50%, eps 0.13, loss 0.2231, 43s
+  game 8 had no reward (statuses ['INVALID', 'DONE'])
+iter 17/60: steps 400, buffer 20144, winrate 33%, eps 0.13, loss 0.1950, 41s
+iter 18/60: steps 400, buffer 21463, winrate 30%, eps 0.13, loss 0.2287, 42s
+  game 7 had no reward (statuses ['INVALID', 'DONE'])
+iter 19/60: steps 400, buffer 22576, winrate 11%, eps 0.12, loss 0.1997, 44s
+iter 20/60: steps 400, buffer 23660, winrate 50%, eps 0.12, loss 0.2123, 41s
+iter 21/60: steps 400, buffer 24852, winrate 10%, eps 0.12, loss 0.1987, 39s
+iter 22/60: steps 400, buffer 26092, winrate 50%, eps 0.12, loss 0.2602, 32s
+iter 23/60: steps 400, buffer 27054, winrate 40%, eps 0.11, loss 0.2527, 29s
+  game 4 had no reward (statuses ['INVALID', 'DONE'])
+iter 24/60: steps 400, buffer 28114, winrate 44%, eps 0.11, loss 0.2335, 29s
+  game 3 had no reward (statuses ['INVALID', 'DONE'])
+  game 4 had no reward (statuses ['INVALID', 'DONE'])
+iter 25/60: steps 400, buffer 28935, winrate 62%, eps 0.11, loss 0.2145, 28s
+  game 7 had no reward (statuses ['INVALID', 'DONE'])
+iter 26/60: steps 400, buffer 29838, winrate 56%, eps 0.11, loss 0.2026, 28s
+iter 27/60: steps 400, buffer 30912, winrate 20%, eps 0.10, loss 0.1812, 28s
+iter 28/60: steps 400, buffer 32069, winrate 30%, eps 0.10, loss 0.2032, 29s
+iter 29/60: steps 400, buffer 33283, winrate 50%, eps 0.10, loss 0.2099, 30s
+  game 8 had no reward (statuses ['INVALID', 'DONE'])
+iter 30/60: steps 400, buffer 34251, winrate 56%, eps 0.10, loss 0.2173, 29s
+iter 31/60: steps 400, buffer 35383, winrate 60%, eps 0.09, loss 0.2087, 29s
+iter 32/60: steps 400, buffer 36085, winrate 20%, eps 0.09, loss 0.1866, 26s
+iter 33/60: steps 400, buffer 37268, winrate 50%, eps 0.09, loss 0.2113, 29s
+iter 34/60: steps 400, buffer 38309, winrate 60%, eps 0.09, loss 0.2112, 28s
+iter 35/60: steps 400, buffer 39345, winrate 60%, eps 0.08, loss 0.2307, 28s
+iter 36/60: steps 400, buffer 40300, winrate 60%, eps 0.08, loss 0.2344, 28s
+iter 37/60: steps 400, buffer 41882, winrate 40%, eps 0.08, loss 0.2566, 32s
+iter 38/60: steps 400, buffer 42823, winrate 80%, eps 0.08, loss 0.2286, 28s
+iter 39/60: steps 400, buffer 43654, winrate 50%, eps 0.07, loss 0.2183, 27s
+iter 40/60: steps 400, buffer 44937, winrate 50%, eps 0.07, loss 0.2334, 30s
+iter 41/60: steps 400, buffer 46057, winrate 50%, eps 0.07, loss 0.2418, 29s
+iter 42/60: steps 400, buffer 47209, winrate 50%, eps 0.07, loss 0.2352, 29s
+iter 43/60: steps 400, buffer 48045, winrate 60%, eps 0.06, loss 0.2228, 27s
+iter 44/60: steps 400, buffer 49399, winrate 50%, eps 0.06, loss 0.2274, 30s
+iter 45/60: steps 400, buffer 50539, winrate 30%, eps 0.06, loss 0.2168, 29s
+iter 46/60: steps 400, buffer 51423, winrate 40%, eps 0.06, loss 0.2089, 27s
+iter 47/60: steps 400, buffer 52191, winrate 40%, eps 0.05, loss 0.2233, 27s
+iter 48/60: steps 400, buffer 52909, winrate 60%, eps 0.05, loss 0.2063, 26s
+iter 49/60: steps 400, buffer 53799, winrate 60%, eps 0.05, loss 0.1967, 27s
+iter 50/60: steps 400, buffer 54540, winrate 50%, eps 0.05, loss 0.1996, 26s
+iter 51/60: steps 400, buffer 55495, winrate 50%, eps 0.04, loss 0.2083, 28s
+iter 52/60: steps 400, buffer 56491, winrate 40%, eps 0.04, loss 0.1996, 28s
+iter 53/60: steps 400, buffer 57506, winrate 40%, eps 0.04, loss 0.2037, 28s
+iter 54/60: steps 400, buffer 58413, winrate 40%, eps 0.04, loss 0.2027, 28s
+iter 55/60: steps 400, buffer 59314, winrate 60%, eps 0.03, loss 0.2093, 27s
+iter 56/60: steps 400, buffer 60000, winrate 60%, eps 0.03, loss 0.2039, 27s
+  game 0 had no reward (statuses ['INVALID', 'DONE'])
+iter 57/60: steps 400, buffer 60000, winrate 44%, eps 0.03, loss 0.2006, 28s
+iter 58/60: steps 400, buffer 60000, winrate 50%, eps 0.03, loss 0.1899, 26s
+iter 59/60: steps 400, buffer 60000, winrate 60%, eps 0.02, loss 0.2089, 28s
+iter 60/60: steps 400, buffer 60000, winrate 40%, eps 0.02, loss 0.1988, 28s
+exported track2_dmc/model_hybrid.npz
+
+CHECKPOINT (the bar is the HEURISTIC, not Track 1 search):
+  py track4_policygrad/eval_policy.py --a track2_dmc/model_hybrid.npz --heuristic --games 40
