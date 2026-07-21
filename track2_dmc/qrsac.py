@@ -182,6 +182,12 @@ def main():
     ap.add_argument("--lr", type=float, default=1e-4)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--max-steps", type=int, default=400)
+    ap.add_argument("--epochs", type=int, default=1,
+                    help="passes over the buffer per iteration. The winning "
+                         "scratch-DMC run did full 2-epoch sweeps (~1875 "
+                         "steps/iter); the original QR-SAC run did one capped "
+                         "pass (~400 steps/iter) and was ~8x under-trained on "
+                         "gradient updates as a result.")
     ap.add_argument("--epsilon", type=float, default=0.15)
     ap.add_argument("--anchor", type=float, default=0.3)
     ap.add_argument("--target-entropy", type=float, default=0.7,
@@ -224,7 +230,9 @@ def main():
         model.train()
         idx = list(range(len(buffer)))
         rng.shuffle(idx)
-        idx = idx[:a.max_steps * a.batch]
+        # Match scratch-DMC's optimisation budget: multiple epochs over the
+        # buffer, capped by --max-steps so wall-clock per iter stays bounded.
+        idx = (idx * a.epochs)[:a.max_steps * a.batch]
         tot_c = tot_a = 0.0
         nb = 0
         for s in range(0, len(idx), a.batch):
