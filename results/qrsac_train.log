@@ -1,0 +1,71 @@
+trunk + policy head warm started: 50 tensors
+quantile head is FRESH (16 quantiles) - never warm started from policy logits (see QRSAC_SPEC.md item 2)
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+iter 1/60: steps 23, buffer 1419, winrate 20%, eps 0.17, critic 0.6184, actor -1.4639, alpha 1.002, 13s
+iter 2/60: steps 49, buffer 3091, winrate 50%, eps 0.17, critic 0.6627, actor -2.7879, alpha 1.000, 15s
+iter 3/60: steps 76, buffer 4820, winrate 30%, eps 0.16, critic 0.5578, actor -3.0874, alpha 0.992, 17s
+iter 4/60: steps 98, buffer 6233, winrate 20%, eps 0.16, critic 0.5060, actor -3.0418, alpha 0.982, 16s
+iter 5/60: steps 120, buffer 7681, winrate 30%, eps 0.16, critic 0.4987, actor -2.9872, alpha 0.970, 17s
+iter 6/60: steps 147, buffer 9382, winrate 20%, eps 0.16, critic 0.4638, actor -2.9671, alpha 0.955, 21s
+iter 7/60: steps 174, buffer 11079, winrate 60%, eps 0.15, critic 0.4108, actor -2.9136, alpha 0.939, 22s
+iter 8/60: steps 197, buffer 12550, winrate 30%, eps 0.15, critic 0.2492, actor -2.8539, alpha 0.921, 22s
+iter 9/60: steps 225, buffer 14343, winrate 20%, eps 0.15, critic 0.1902, actor -2.8059, alpha 0.901, 26s
+iter 10/60: steps 247, buffer 15754, winrate 30%, eps 0.15, critic 0.1740, actor -2.7350, alpha 0.880, 25s
+iter 11/60: steps 273, buffer 17453, winrate 30%, eps 0.14, critic 0.1458, actor -2.6727, alpha 0.858, 28s
+iter 12/60: steps 299, buffer 19080, winrate 30%, eps 0.14, critic 0.1494, actor -2.6050, alpha 0.834, 29s
+iter 13/60: steps 325, buffer 20799, winrate 20%, eps 0.14, critic 0.1563, actor -2.5343, alpha 0.809, 32s
+iter 14/60: steps 350, buffer 22377, winrate 40%, eps 0.14, critic 0.1660, actor -2.4474, alpha 0.783, 32s
+iter 15/60: steps 375, buffer 23975, winrate 40%, eps 0.13, critic 0.1762, actor -2.3625, alpha 0.756, 34s
+iter 16/60: steps 400, buffer 25732, winrate 20%, eps 0.13, critic 0.1607, actor -2.2756, alpha 0.728, 36s
+iter 17/60: steps 400, buffer 27253, winrate 30%, eps 0.13, critic 0.1539, actor -2.1979, alpha 0.702, 34s
+iter 18/60: steps 400, buffer 28676, winrate 10%, eps 0.13, critic 0.1485, actor -2.1131, alpha 0.677, 33s
+iter 19/60: steps 400, buffer 30207, winrate 30%, eps 0.12, critic 0.1602, actor -2.0372, alpha 0.653, 34s
+iter 20/60: steps 400, buffer 32014, winrate 30%, eps 0.12, critic 0.1792, actor -1.9606, alpha 0.629, 36s
+iter 21/60: steps 400, buffer 33411, winrate 30%, eps 0.12, critic 0.1649, actor -1.8876, alpha 0.607, 32s
+iter 22/60: steps 400, buffer 35089, winrate 40%, eps 0.12, critic 0.1676, actor -1.8264, alpha 0.585, 35s
+iter 23/60: steps 400, buffer 36755, winrate 30%, eps 0.11, critic 0.1582, actor -1.7583, alpha 0.564, 35s
+iter 24/60: steps 400, buffer 38299, winrate 40%, eps 0.11, critic 0.1626, actor -1.6984, alpha 0.544, 34s
+iter 25/60: steps 400, buffer 39800, winrate 30%, eps 0.11, critic 0.1585, actor -1.6264, alpha 0.525, 34s
+iter 26/60: steps 400, buffer 41470, winrate 40%, eps 0.11, critic 0.1711, actor -1.5649, alpha 0.506, 42s
+iter 27/60: steps 400, buffer 43180, winrate 10%, eps 0.10, critic 0.1580, actor -1.5086, alpha 0.488, 136s
+iter 28/60: steps 400, buffer 44718, winrate 20%, eps 0.10, critic 0.1504, actor -1.4515, alpha 0.471, 134s
+iter 29/60: steps 400, buffer 46443, winrate 30%, eps 0.10, critic 0.1526, actor -1.3993, alpha 0.454, 142s
+iter 30/60: steps 400, buffer 48148, winrate 30%, eps 0.10, critic 0.1508, actor -1.3507, alpha 0.438, 139s
+iter 31/60: steps 400, buffer 49682, winrate 30%, eps 0.09, critic 0.1472, actor -1.3009, alpha 0.423, 136s
+iter 32/60: steps 400, buffer 51151, winrate 40%, eps 0.09, critic 0.1454, actor -1.2623, alpha 0.408, 132s
+iter 33/60: steps 400, buffer 52810, winrate 50%, eps 0.09, critic 0.1447, actor -1.2147, alpha 0.393, 122s
+iter 34/60: steps 400, buffer 54440, winrate 30%, eps 0.09, critic 0.1479, actor -1.1637, alpha 0.379, 35s
+iter 35/60: steps 400, buffer 56109, winrate 40%, eps 0.08, critic 0.1543, actor -1.1259, alpha 0.366, 117s
+iter 36/60: steps 400, buffer 57810, winrate 50%, eps 0.08, critic 0.1695, actor -1.0795, alpha 0.353, 125s
+iter 37/60: steps 400, buffer 59408, winrate 40%, eps 0.08, critic 0.1660, actor -1.0415, alpha 0.340, 133s
+iter 38/60: steps 400, buffer 60000, winrate 10%, eps 0.08, critic 0.1575, actor -0.9877, alpha 0.328, 127s
+iter 39/60: steps 400, buffer 60000, winrate 20%, eps 0.07, critic 0.1661, actor -0.9583, alpha 0.317, 70s
+iter 40/60: steps 400, buffer 60000, winrate 40%, eps 0.07, critic 0.1661, actor -0.9297, alpha 0.305, 33s
+iter 41/60: steps 400, buffer 60000, winrate 10%, eps 0.07, critic 0.1657, actor -0.8963, alpha 0.295, 33s
+iter 42/60: steps 400, buffer 60000, winrate 30%, eps 0.07, critic 0.1665, actor -0.8517, alpha 0.284, 32s
+iter 43/60: steps 400, buffer 60000, winrate 20%, eps 0.06, critic 0.1724, actor -0.8270, alpha 0.274, 35s
+iter 44/60: steps 400, buffer 60000, winrate 40%, eps 0.06, critic 0.1696, actor -0.7925, alpha 0.264, 35s
+iter 45/60: steps 400, buffer 60000, winrate 20%, eps 0.06, critic 0.1700, actor -0.7744, alpha 0.255, 36s
+iter 46/60: steps 400, buffer 60000, winrate 20%, eps 0.06, critic 0.1635, actor -0.7356, alpha 0.246, 131s
+iter 47/60: steps 400, buffer 60000, winrate 40%, eps 0.05, critic 0.1614, actor -0.7134, alpha 0.237, 127s
+iter 48/60: steps 400, buffer 60000, winrate 30%, eps 0.05, critic 0.1675, actor -0.6811, alpha 0.229, 136s
+iter 49/60: steps 400, buffer 60000, winrate 20%, eps 0.05, critic 0.1593, actor -0.6550, alpha 0.221, 137s
+iter 50/60: steps 400, buffer 60000, winrate 30%, eps 0.05, critic 0.1673, actor -0.6242, alpha 0.213, 138s
+iter 51/60: steps 400, buffer 60000, winrate 50%, eps 0.04, critic 0.1579, actor -0.6090, alpha 0.206, 130s
+iter 52/60: steps 400, buffer 60000, winrate 10%, eps 0.04, critic 0.1483, actor -0.5931, alpha 0.198, 139s
+iter 53/60: steps 400, buffer 60000, winrate 50%, eps 0.04, critic 0.1521, actor -0.5683, alpha 0.191, 142s
+iter 54/60: steps 400, buffer 60000, winrate 30%, eps 0.04, critic 0.1552, actor -0.5504, alpha 0.185, 139s
+iter 55/60: steps 400, buffer 60000, winrate 20%, eps 0.03, critic 0.1500, actor -0.5232, alpha 0.178, 130s
+iter 56/60: steps 400, buffer 60000, winrate 20%, eps 0.03, critic 0.1434, actor -0.5099, alpha 0.172, 133s
+iter 57/60: steps 400, buffer 60000, winrate 20%, eps 0.03, critic 0.1472, actor -0.4897, alpha 0.166, 138s
+iter 58/60: steps 400, buffer 60000, winrate 30%, eps 0.03, critic 0.1435, actor -0.4704, alpha 0.160, 136s
+iter 59/60: steps 400, buffer 60000, winrate 30%, eps 0.02, critic 0.1466, actor -0.4513, alpha 0.155, 140s
+iter 60/60: steps 400, buffer 60000, winrate 40%, eps 0.02, critic 0.1419, actor -0.4247, alpha 0.149, 131s
+exported track2_dmc/model_qrsac.npz (+ quantile head alongside)
+
+CHECKPOINT:
+  py tools/ab_test.py <variant_dir> track1_search/agent 30
