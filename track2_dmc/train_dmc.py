@@ -203,11 +203,17 @@ def main():
                 # top-1, and 37.5 percent in the A/B) because logged data never
                 # shows the alternatives. This keeps them calibrated so the
                 # ordering stays sane where exploration has not reached.
-                valid = mask > 0.5
+                # ``mask`` is the transformer attention mask and also includes
+                # global, board, and hand tokens.  Only kind-3 tokens are legal
+                # options; pulling state-token outputs toward V both wastes most
+                # of the regularizer and overwhelms the option ranking signal.
+                valid = (kind == 3) & (mask > 0.5)
                 anchor_t = v.detach()[:, None].expand_as(q)
                 diff = (q - anchor_t) ** 2 * valid
                 diff[torch.arange(len(chunk)), pos] = 0.0
-                loss = loss + a.anchor * (diff.sum() / valid.sum().clamp(min=1))
+                untaken_count = valid.sum() - len(chunk)
+                loss = loss + a.anchor * (
+                    diff.sum() / untaken_count.clamp(min=1))
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()

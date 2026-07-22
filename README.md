@@ -1,11 +1,14 @@
 # pokemon TCG AI Battle Challenge
 
-readme outdated.. 
 Agents for the Kaggle competition
 [`pokemon-tcg-ai-battle`](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle).
 
-Four tracks, in order of maturity. Track 1 is on the ladder. Tracks 2 to 4 are
-designed and justified but not implemented.
+Four tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
+4 are now implemented as self-play RL (results below); Track 3 remains a design.
+
+> **This README is the project's source of truth and running memory.** The
+> "Track 2 results" section below is the most recent work: a study of RL as
+> search priors and a measured diagnosis of QR-SAC (2026-07-21).
 
 ```
 track1_search/     determinized search + learned priors   
@@ -108,12 +111,93 @@ inverted a real result by roughly 120 rating points.
 
 ---
 
-## Track 2: Deep Monte Carlo (`track2_dmc/`)
+## Track 2: Deep Monte Carlo + QR-SAC (`track2_dmc/`) — IMPLEMENTED
 
 DouZero style. No tree search at all: learn Q(state, action) from Monte Carlo
 returns of self play, spend all compute on generating data rather than on
 lookahead. Motivated directly by Track 1's measured failure mode, where the
 network and the search compete for the same CPU. See `track2_dmc/README.md`.
+
+Two self-play learners are implemented:
+
+- `train_dmc.py` — Deep Monte Carlo: regress `Q(s,a)` toward the self-play MC
+  return, act by argmax. `--scratch` disables the BC warm start.
+- `qrsac.py` — QR-SAC, built to `QRSAC_SPEC.md`: Q-learning core, a **separate**
+  16-quantile distributional critic (never warm started from the policy logits),
+  an entropy-targeted SAC actor with auto-tuned alpha, and an anchor regulariser
+  on untaken options.
+
+Both **deploy as root move-ordering priors** for Track 1 search — the only
+network placement that has ever paid off (see ISO-A 819.8 vs ISO-B 775.7). The
+policy head is exported via `export_npz` and Track 1 reads it at the root only.
+
+### RL-as-priors results — A/B vs the BC-prior agent
+
+| Prior source | A/B win rate | Record | Note |
+|---|---|---|---|
+| **scratch-DMC** | **58.3%** | 14-10 (n=24) | best local; **submitted to ladder 2026-07-21** (result pending) |
+| QR-SAC (warm start) | 43.3% | 13-17 (n=30) | |
+| offline-DMC (136k logged) | 37.5% | | logged data only labels the *played* move, so it cannot rank alternatives |
+| hybrid warm-start | 36.7% | | warm-starting a regression head from cross-entropy logits actively hurt (iter-1 loss 10.8 vs 1.5) |
+
+The 58% vs 43% gap is **not statistically significant** (two-proportion z ≈ 1.1,
+p ≈ 0.27; both samples are tiny). And local A/Bs are known to invert on the
+ladder (see v3). So "QR-SAC is worse" is a confounded, noisy, 30-game read.
+
+### Why QR-SAC underperformed — measured, not guessed
+
+Prior sharpness measured on 5,053 real decision states (`bc_917eps.npz`), over the
+**option tokens the deployed agent actually reads** (`main.py._net_scores`):
+
+| Deployed option prior | norm. entropy | logit spread | top-1 == strong-play move |
+|---|---|---|---|
+| BC | 0.77 | 4.29 | 41% |
+| scratch-DMC (winner) | 0.998 | **0.10** | 21% |
+| QR-SAC | 0.99 | 0.30 | 18% |
+
+1. **The winning prior is essentially uniform** (spread 0.10 ≈ 1/n). Both RL models
+   failed to learn a *discriminative* option ranking. scratch-DMC wins not because
+   its ranking is good, but because a near-uniform prior + strong search beats
+   BC's sharper-but-imperfect prior — the same mechanism as the leaf-eval autopsy
+   (a confident prior makes PUCT commit early; a flat one keeps it exploring).
+2. **QR-SAC's sophistication is invisible at deployment.** The distributional
+   critic, entropy target, alpha tuning, and risk machinery all collapse to a
+   single scalar per option. Its critic Q-mean is *even flatter* (entropy 0.997,
+   spread 0.26). It pays a large complexity cost for the same kind of flat prior
+   DMC produces more simply — this is why "simplest won."
+3. **It was never a controlled comparison.** scratch-DMC trained 90 iters × ~1875
+   grad-steps (~170k updates); the original QR-SAC ran 60 × 400 (~21k, ~8× fewer),
+   *and* warm-started, *and* fewer iters. Its actor loss was still monotonically
+   improving at the last iteration — undertrained on gradient updates.
+
+### Two implementation bugs in `qrsac.py` (found; fix pending)
+
+1. **Actor normalization mismatch.** The actor loss softmaxes and entropy-targets
+   over all ~17 board + hand + global + option tokens (`mask > 0.5`), but `act()`
+   (data collection) and `_net_scores` (deployment) softmax over **option tokens
+   only**. The actor optimized the wrong distribution — the prime suspect for the
+   mushy option prior. Fix: restrict the actor loss and the `ln(n_act)` entropy
+   target to option positions.
+2. **Anchor over-flattens the critic.** The `--anchor` term pulls all ~16
+   non-action tokens toward the state value, dominating the loss and collapsing
+   the option-Q spread to ~0.1–0.3. Fix: restrict the anchor to option tokens.
+
+### Done / next
+
+- **DONE:** added `--epochs` to `qrsac.py` (ports DMC's 2-epoch buffer sweep; the
+  original QR-SAC did one capped 400-step pass and was ~8× under-trained).
+- **INTERRUPTED:** a controlled `qrsac.py --scratch --iters 90 --epochs 2
+  --max-steps 2000` run (only the *algorithm* differing from the winner) was
+  launched, then stopped by request around iter 20. No `model_qrsac_scratch.npz`
+  was produced; the `qrsac_variant` model and all committed models are unchanged.
+- **NEXT:** fix bugs 1 + 2 (option-restricted actor + anchor), re-run the
+  controlled scratch experiment, and gate with **≥ 40 games** (30 is
+  noise-limited). Success = option-agreement with strong play rising above BC's
+  41%, or a clear A/B win.
+- **If it still lands near-uniform / parity,** the conclusion is firm: no learned
+  prior beats a from-scratch flat prior in this slot, and the real lever is
+  **deck choice** — deck mining shows Alakazam at 48% field win rate vs Dragapult
+  at 65%, a ~17-point gap that dwarfs any prior-source delta measured all session.
 
 ---
 
@@ -136,6 +220,12 @@ actually run a policy gradient. DG gates each update term by a sigmoid of
 advantage times action surprisal, which targets the exact shape of our data,
 where most of roughly 150 decisions per game are already solved and a few MAIN
 phase decisions decide the outcome. See `track4_policygrad/README.md`.
+
+**Implemented and run (2026-07-21).** Pure RL vs the heuristic: DG **collapsed**
+(loss fell 80% while strength halved, 26.7% → 12.5%), while DMC under identical
+conditions stayed stable (13.3% → 27.5%). The instability is policy-gradient
+specific, not a property of the self-play setup — which is exactly why Track 2's
+QR-SAC uses a Q-learning core rather than a policy gradient.
 
 ---
 

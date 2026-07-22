@@ -18,12 +18,13 @@ and the policy head keep their semantics. Only the new quantile head starts
 fresh, which is the distinction the hybrid run got wrong.
 
 Usage:
-  py track2_dmc/qrsac.py --iters 60 --games 10
-  py track2_dmc/qrsac.py --iters 60 --games 10 --scratch     # no trunk warm start
+  py track2_dmc/qrsac.py --games 10
+  py track2_dmc/qrsac.py --games 10 --scratch     # no trunk warm start
 """
 from __future__ import annotations
 
 import argparse
+import glob
 import os
 import random
 import sys
@@ -93,6 +94,112 @@ def quantile_huber(pred, target, taus, kappa=1.0):
     return (torch.abs(taus[None, :] - (d.detach() < 0).float()) * huber).mean()
 
 
+def option_token_mask(kind, mask):
+    """Return the selectable-token mask used by collection and deployment.
+
+    ``mask`` is an attention mask: it also contains the global, board, and hand
+    tokens.  Treating it as an action mask makes the actor solve a different
+    categorical problem from the one used by :func:`act` and ``_net_scores``.
+    """
+    return (kind == 3) & (mask > 0.5)
+
+
+def option_policy_stats(logits, qmean, option_mask):
+    """Policy, entropy, and expected Q over selectable options only."""
+    if not bool(option_mask.any(dim=-1).all()):
+        raise ValueError("every training state must contain an option token")
+    option_logits = logits.masked_fill(~option_mask, -torch.inf)
+    logp = torch.log_softmax(option_logits, dim=-1)
+    # Avoid 0 * -inf in entropy while keeping non-option probabilities exact 0.
+    safe_logp = torch.where(option_mask, logp, torch.zeros_like(logp))
+    p = torch.where(option_mask, logp.exp(), torch.zeros_like(logp))
+    entropy = -(p * safe_logp).sum(-1)
+    expected_q = (p * qmean).sum(-1)
+    return p, logp, entropy, expected_q
+
+
+def option_anchor_loss(qmean, value, taken_pos, option_mask):
+    """Anchor only untaken selectable options, with the correct denominator."""
+    untaken = option_mask.clone()
+    untaken[torch.arange(len(taken_pos), device=taken_pos.device), taken_pos] = False
+    sqerr = (qmean - value.detach()[:, None]).square()
+    return (sqerr * untaken).sum() / untaken.sum().clamp(min=1)
+
+
+def alpha_tuning_loss(log_alpha, entropy, target_entropy):
+    """Tune entropy temperature in log space without a near-zero dead zone.
+
+    Differentiating ``exp(log_alpha)`` here makes the update proportional to
+    alpha itself.  Once alpha gets small it then cannot recover when entropy
+    drops below target.  The standard log-space objective keeps that corrective
+    gradient finite.
+    """
+    gap = (target_entropy - entropy).detach()
+    return -(log_alpha * gap).mean()
+
+
+def save_model(model, path):
+    """Write deployable actor weights plus the training-only quantile head."""
+    export_npz(model.base, path)
+    torch.save({"q_head": model.q_head.state_dict()},
+               path.replace(".npz", "_qhead.pt"))
+
+
+def iteration_path(path, iteration):
+    stem, ext = os.path.splitext(path)
+    return f"{stem}_iter{iteration:03d}{ext or '.npz'}"
+
+
+def load_bc_replay(path, max_samples, seed):
+    """Load a bounded rehearsal set of leaderboard/search policy targets.
+
+    Logged games cannot supervise Q for actions that were not chosen, but their
+    search visit distributions remain high-value actor targets.  Sampling while
+    each compressed shard is open keeps the retained set small enough for a
+    laptop even when the full replay corpus is much larger.
+    """
+    files = sorted(glob.glob(os.path.join(path, "*.npz"))) \
+        if os.path.isdir(path) else [path]
+    files = [f for f in files if os.path.isfile(f)]
+    if not files:
+        raise FileNotFoundError(f"no BC replay shards found at {path}")
+    keys = ("kind", "card", "scal", "mask", "ctx", "stype", "pi")
+    parts = {k: [] for k in keys}
+    rng = np.random.default_rng(seed)
+    per_file = max(1, (max_samples + len(files) - 1) // len(files))
+    for path_i in files:
+        with np.load(path_i) as shard:
+            n = len(shard["pi"])
+            take = min(n, per_file)
+            chosen = rng.choice(n, size=take, replace=False)
+            for key in keys:
+                parts[key].append(shard[key][chosen])
+    data = {k: np.concatenate(v, axis=0) for k, v in parts.items()}
+    if len(data["pi"]) > max_samples:
+        chosen = rng.choice(len(data["pi"]), size=max_samples, replace=False)
+        data = {k: v[chosen] for k, v in data.items()}
+    return data
+
+
+def bc_actor_loss(model, data, indices, device):
+    """Option-only cross entropy on leaderboard/search policy targets."""
+    kind = torch.as_tensor(data["kind"][indices].astype(np.int64), device=device)
+    card = torch.as_tensor(data["card"][indices].astype(np.int64), device=device)
+    scal = torch.as_tensor(data["scal"][indices], device=device)
+    mask = torch.as_tensor(data["mask"][indices], device=device)
+    ctx = torch.as_tensor(data["ctx"][indices].astype(np.int64), device=device)
+    styp = torch.as_tensor(data["stype"][indices].astype(np.int64), device=device)
+    target = torch.as_tensor(data["pi"][indices], device=device)
+    logits, _quant, _value = model(kind, card, scal, mask, ctx, styp)
+    options = option_token_mask(kind, mask)
+    option_logits = logits.masked_fill(~options, -torch.inf)
+    logp = torch.log_softmax(option_logits, dim=-1)
+    safe_logp = torch.where(options, logp, torch.zeros_like(logp))
+    target = torch.where(options, target, torch.zeros_like(target))
+    target = target / target.sum(-1, keepdim=True).clamp(min=1e-8)
+    return -(target * safe_logp).sum(-1).mean()
+
+
 def act(model, M, obs, me, rng, epsilon, alpha_log):
     """Sample an action from the entropy regularised policy."""
     sel = obs["select"]
@@ -100,13 +207,15 @@ def act(model, M, obs, me, rng, epsilon, alpha_log):
     scores = [M._option_score(o, sel) for o in opts]
     kind, card, scal, mask, slot = NF.encode(
         {"current": obs["current"], "select": sel}, me, M.CARD, M.ATTACK, scores)
+    device = next(model.parameters()).device
     with torch.no_grad():
         logits, quant, _v = model(
-            torch.tensor(kind[None].astype(np.int64)),
-            torch.tensor(card[None].astype(np.int64)),
-            torch.tensor(scal[None]), torch.tensor(mask[None]),
-            torch.tensor(np.array([int(sel.get("context") or 0)])),
-            torch.tensor(np.array([int(sel.get("type") or 0)])))
+            torch.as_tensor(kind[None].astype(np.int64), device=device),
+            torch.as_tensor(card[None].astype(np.int64), device=device),
+            torch.as_tensor(scal[None], device=device),
+            torch.as_tensor(mask[None], device=device),
+            torch.as_tensor([int(sel.get("context") or 0)], device=device),
+            torch.as_tensor([int(sel.get("type") or 0)], device=device))
     valid = [(i, slot[i]) for i in range(len(opts)) if slot[i] >= 0]
     if not valid:
         return None, None
@@ -119,7 +228,7 @@ def act(model, M, obs, me, rng, epsilon, alpha_log):
     kmax = max(1, min(sel.get("maxCount", 1), len(opts)))
     action = [valid[j][0]]
     if kmax > 1:
-        for jj in np.argsort(-lp.detach().numpy()):
+        for jj in np.argsort(-lp.detach().cpu().numpy()):
             if len(action) >= kmax:
                 break
             oi = valid[int(jj)][0]
@@ -177,43 +286,76 @@ def rollout(model, M, n_games, rng, epsilon, alpha_log):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--iters", type=int, default=60)
+    ap.add_argument("--iters", type=int, default=90)
     ap.add_argument("--games", type=int, default=10)
     ap.add_argument("--lr", type=float, default=1e-4)
     ap.add_argument("--batch", type=int, default=64)
-    ap.add_argument("--max-steps", type=int, default=400)
-    ap.add_argument("--epochs", type=int, default=1,
+    ap.add_argument("--max-steps", type=int, default=2000)
+    ap.add_argument("--epochs", type=int, default=2,
                     help="passes over the buffer per iteration. The winning "
                          "scratch-DMC run did full 2-epoch sweeps (~1875 "
                          "steps/iter); the original QR-SAC run did one capped "
                          "pass (~400 steps/iter) and was ~8x under-trained on "
                          "gradient updates as a result.")
+    ap.add_argument("--save-every", type=int, default=5,
+                    help="export an intermediate model every N iterations; "
+                         "zero disables periodic checkpoints")
     ap.add_argument("--epsilon", type=float, default=0.15)
     ap.add_argument("--anchor", type=float, default=0.3)
     ap.add_argument("--target-entropy", type=float, default=0.7,
                     help="fraction of ln(n_actions) to hold")
+    ap.add_argument("--bc-data",
+                    default=os.path.join(ROOT, "track1_search", "train", "data_bc"),
+                    help="leaderboard/search replay shard or directory used "
+                         "for actor rehearsal; empty string disables it")
+    ap.add_argument("--bc-weight", type=float, default=0.1,
+                    help="weight of option-only supervised actor rehearsal; "
+                         "zero disables it")
+    ap.add_argument("--bc-samples", type=int, default=20000,
+                    help="maximum replay decisions retained in memory")
+    ap.add_argument("--bc-batch", type=int, default=64)
+    ap.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto",
+                    help="training device; auto uses CUDA when available")
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--scratch", action="store_true")
     ap.add_argument("--init", default=os.path.join(ROOT, "track1_search", "train", "model_v4.npz"))
     ap.add_argument("--out", default=os.path.join(HERE, "model_qrsac.npz"))
     a = ap.parse_args()
 
+    if a.device == "cuda" and not torch.cuda.is_available():
+        ap.error("--device cuda requested but CUDA is unavailable")
+    device_name = ("cuda" if torch.cuda.is_available() else "cpu") \
+        if a.device == "auto" else a.device
+    device = torch.device(device_name)
+    if device.type == "cuda":
+        torch.set_float32_matmul_precision("high")
+    torch.manual_seed(a.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(a.seed)
+    print(f"device: {device}")
+
     M = load_agent_module()
+    bc_data = None
+    if a.bc_weight > 0 and a.bc_data:
+        bc_data = load_bc_replay(a.bc_data, a.bc_samples, a.seed)
+        print(f"leaderboard actor rehearsal: {len(bc_data['pi'])} decisions, "
+              f"weight {a.bc_weight:g}")
     base = TCGNet()
     if not a.scratch and os.path.exists(a.init):
         n = import_weights(base, a.init)
         print(f"trunk + policy head warm started: {n} tensors")
     else:
         print("full scratch initialisation")
-    model = QRSACNet(base)
+    model = QRSACNet(base).to(device)
     print(f"quantile head is FRESH ({N_QUANTILES} quantiles) - never warm "
           f"started from policy logits (see QRSAC_SPEC.md item 2)")
 
     taus = torch.tensor([(i + 0.5) / N_QUANTILES for i in range(N_QUANTILES)],
-                        dtype=torch.float32)
-    log_alpha = torch.zeros(1, requires_grad=True)
+                        dtype=torch.float32, device=device)
+    log_alpha = torch.zeros(1, requires_grad=True, device=device)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr)
     opt_alpha = torch.optim.Adam([log_alpha], lr=a.lr)
-    rng = random.Random(0)
+    rng = random.Random(a.seed)
     buffer = []
 
     for it in range(a.iters):
@@ -233,69 +375,93 @@ def main():
         # Match scratch-DMC's optimisation budget: multiple epochs over the
         # buffer, capped by --max-steps so wall-clock per iter stays bounded.
         idx = (idx * a.epochs)[:a.max_steps * a.batch]
-        tot_c = tot_a = 0.0
+        tot_c = tot_a = tot_bc = 0.0
         nb = 0
         for s in range(0, len(idx), a.batch):
             chunk = [buffer[i] for i in idx[s:s + a.batch]]
             if len(chunk) < 2:
                 continue
-            kind = torch.tensor(np.stack([c[0][0] for c in chunk]).astype(np.int64))
-            card = torch.tensor(np.stack([c[0][1] for c in chunk]).astype(np.int64))
-            scal = torch.tensor(np.stack([c[0][2] for c in chunk]))
-            mask = torch.tensor(np.stack([c[0][3] for c in chunk]))
-            ctx = torch.tensor(np.array([c[0][4] for c in chunk]))
-            styp = torch.tensor(np.array([c[0][5] for c in chunk]))
-            pos = torch.tensor(np.array([c[0][6] for c in chunk]))
-            z = torch.tensor(np.array([c[1] for c in chunk], dtype=np.float32))
-            ar = torch.arange(len(chunk))
+            kind = torch.as_tensor(
+                np.stack([c[0][0] for c in chunk]).astype(np.int64), device=device)
+            card = torch.as_tensor(
+                np.stack([c[0][1] for c in chunk]).astype(np.int64), device=device)
+            scal = torch.as_tensor(
+                np.stack([c[0][2] for c in chunk]), device=device)
+            mask = torch.as_tensor(
+                np.stack([c[0][3] for c in chunk]), device=device)
+            ctx = torch.as_tensor([c[0][4] for c in chunk], device=device)
+            styp = torch.as_tensor([c[0][5] for c in chunk], device=device)
+            pos = torch.as_tensor([c[0][6] for c in chunk], device=device)
+            z = torch.as_tensor(
+                [c[1] for c in chunk], dtype=torch.float32, device=device)
+            ar = torch.arange(len(chunk), device=device)
 
             logits, quant, v = model(kind, card, scal, mask, ctx, styp)
 
             # ---- critic: quantile regression toward the Monte Carlo return
             q_taken = quant[ar, pos]                            # [B, Nq]
             closs = quantile_huber(q_taken, z, taus)
-            # anchor untaken options so ranking stays defined where exploration
-            # has not reached (spec item 6)
+            option_mask = option_token_mask(kind, mask)
+
+            # Anchor untaken OPTIONS so ranking stays defined where exploration
+            # has not reached (spec item 6).  The attention mask also includes
+            # state tokens; anchoring those was the original over-flattening bug.
             if a.anchor > 0:
                 qmean = quant.mean(-1)                          # [B, SEQ]
-                valid = mask > 0.5
-                diff = (qmean - v.detach()[:, None]) ** 2 * valid
-                diff[ar, pos] = 0.0
-                closs = closs + a.anchor * (diff.sum() / valid.sum().clamp(min=1))
+                closs = closs + a.anchor * option_anchor_loss(
+                    qmean, v, pos, option_mask)
             closs = closs + 0.5 * ((v - z) ** 2).mean()
 
-            # ---- actor: maximise Q minus alpha-weighted entropy penalty
+            # ---- actor: maximise Q minus alpha-weighted entropy penalty.
+            # Collection and deployment normalize over option tokens only, so
+            # actor training and its entropy target must use that same support.
             alpha = log_alpha.exp().detach()
-            logp_all = torch.log_softmax(logits, dim=-1)
-            p_all = logp_all.exp() * (mask > 0.5).float()
             qmean_d = quant.mean(-1).detach()
-            ent = -(p_all * logp_all.clamp(min=-20)).sum(-1)
-            aloss = (alpha * -ent - (p_all * qmean_d).sum(-1)).mean()
+            _p, _logp, ent, expected_q = option_policy_stats(
+                logits, qmean_d, option_mask)
+            aloss = (-alpha * ent - expected_q).mean()
 
-            loss = closs + aloss
+            bcloss = torch.zeros((), device=device)
+            if bc_data is not None:
+                bc_idx = np.array(
+                    [rng.randrange(len(bc_data["pi"])) for _ in range(a.bc_batch)])
+                bcloss = bc_actor_loss(model, bc_data, bc_idx, device)
+
+            loss = closs + aloss + a.bc_weight * bcloss
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
 
             # ---- alpha: hold entropy at a target fraction of ln(n_actions)
-            n_act = (mask > 0.5).float().sum(-1).clamp(min=2)
+            n_act = option_mask.sum(-1).float().clamp(min=2)
             target = a.target_entropy * torch.log(n_act)
-            alpha_loss = -(log_alpha.exp() * (target - ent.detach()).mean())
+            alpha_loss = alpha_tuning_loss(log_alpha, ent, target)
             opt_alpha.zero_grad(); alpha_loss.backward(); opt_alpha.step()
+            with torch.no_grad():
+                log_alpha.clamp_(min=-10.0, max=5.0)
 
-            tot_c += float(closs.item()); tot_a += float(aloss.item()); nb += 1
+            tot_c += float(closs.item())
+            tot_a += float(aloss.item())
+            tot_bc += float(bcloss.item())
+            nb += 1
 
         print(f"iter {it+1}/{a.iters}: steps {nb}, buffer {len(buffer)}, "
               f"winrate {100*wins/max(played,1):.0f}%, eps {eps:.2f}, "
               f"critic {tot_c/max(nb,1):.4f}, actor {tot_a/max(nb,1):.4f}, "
-              f"alpha {float(log_alpha.exp()):.3f}, "
+              f"bc {tot_bc/max(nb,1):.4f}, "
+              f"alpha {float(log_alpha.detach().exp()):.3f}, "
               f"{time.perf_counter()-t0:.0f}s", flush=True)
+        if a.save_every > 0 and (it + 1) % a.save_every == 0:
+            # Preserve snapshots for post-training selection; the best search
+            # prior need not be the final optimization iterate.  Also refresh
+            # the main path so an interrupted run always leaves a usable model.
+            save_model(model, iteration_path(a.out, it + 1))
+            save_model(model, a.out)
+            print(f"  checkpointed {iteration_path(a.out, it + 1)}", flush=True)
 
     # Export in the deployed format. The agent reads the POLICY head for root
     # priors, so exporting the base is exactly what search consumes.
-    export_npz(model.base, a.out)
-    torch.save({"q_head": model.q_head.state_dict()},
-               a.out.replace(".npz", "_qhead.pt"))
+    save_model(model, a.out)
     print(f"exported {a.out} (+ quantile head alongside)")
     print("\nCHECKPOINT:\n  py tools/ab_test.py <variant_dir> track1_search/agent 30")
 
