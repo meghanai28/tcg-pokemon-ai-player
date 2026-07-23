@@ -1,0 +1,44 @@
+leaderboard entries: 0; min-elo filter: 0.0
+50 episodes -> 6212 samples
+100 episodes -> 13115 samples
+150 episodes -> 19169 samples
+200 episodes -> 25558 samples
+250 episodes -> 32200 samples
+300 episodes -> 43942 samples
+350 episodes -> 50789 samples
+400 episodes -> 56797 samples
+450 episodes -> 63575 samples
+500 episodes -> 70930 samples
+550 episodes -> 78344 samples
+600 episodes -> 85436 samples
+650 episodes -> 92339 samples
+700 episodes -> 99475 samples
+750 episodes -> 106522 samples
+800 episodes -> 113622 samples
+850 episodes -> 120678 samples
+900 episodes -> 127939 samples
+950 episodes -> 135252 samples
+1000 episodes -> 142337 samples
+1050 episodes -> 149080 samples
+1100 episodes -> 156302 samples
+1150 episodes -> 163299 samples
+1200 episodes -> 170693 samples
+1250 episodes -> 178132 samples
+1300 episodes -> 185409 samples
+1350 episodes -> 192462 samples
+1400 episodes -> 199516 samples
+1450 episodes -> 206699 samples
+1500 episodes -> 214108 samples
+1550 episodes -> 221503 samples
+1600 episodes -> 228303 samples
+1650 episodes -> 235860 samples
+1700 episodes -> 243071 samples
+1750 episodes -> 250329 samples
+1800 episodes -> 257151 samples
+1850 episodes -> 263997 samples
+1900 episodes -> 271298 samples
+1950 episodes -> 278143 samples
+2000 episodes -> 284904 samples
+2050 episodes -> 291372 samples
+wrote track1_search/train/data_bc_all\bc_2091eps.npz: 297713 samples from 2091 episodes
+train with: py train/train_bc.py --data track1_search/train/data_bc_all

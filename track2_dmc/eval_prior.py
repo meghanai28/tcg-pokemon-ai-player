@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.join(ROOT, "track1_search", "agent"))
 import nn_features as NF  # noqa: E402
 from nn_infer import NumpyNet  # noqa: E402
 sys.path.insert(0, os.path.join(ROOT, "track1_search", "train"))
+import model as model_module  # noqa: E402
 from model import TCGNet  # noqa: E402
 
 
@@ -31,8 +32,14 @@ def evaluate(model_path, data, indices, batch, backend, device):
     if backend == "numpy":
         model = NumpyNet(model_path)
     else:
-        model = TCGNet().to(device)
         weights = np.load(model_path)
+        if "_meta" in weights:
+            dim, layers, heads, dff = map(int, weights["_meta"])
+            model_module.D_MODEL = dim
+            model_module.N_LAYERS = layers
+            model_module.N_HEADS = heads
+            model_module.D_FF = dff
+        model = TCGNet().to(device)
         state = model.state_dict()
         with torch.no_grad():
             for key, value in state.items():

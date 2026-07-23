@@ -119,8 +119,12 @@ def _load_net():
         return
     if AGENT_DIR not in sys.path:
         sys.path.insert(0, AGENT_DIR)
+    import importlib
     import numpy as np
-    import nn_features
+    feature_module = ("nn_features_rich"
+                      if os.path.exists(os.path.join(AGENT_DIR, "nn_features_rich.py"))
+                      else "nn_features")
+    nn_features = importlib.import_module(feature_module)
     from nn_infer import NumpyNet
     net = NumpyNet(path)
 
@@ -532,8 +536,12 @@ def _net_scores(state, me, sel, opts, heur):
         return None
     try:
         import numpy as _np
+        # Rich replay features were ingested in engine order.  Preserve that
+        # order here; the base model keeps its historical heuristic truncation.
+        truncation_scores = None if _NF.__name__ == "nn_features_rich" else heur
         kind, card, scal, mask, opt_slot = _NF.encode(
-            {"current": state["current"], "select": sel}, me, CARD, ATTACK, heur)
+            {"current": state["current"], "select": sel}, me, CARD, ATTACK,
+            truncation_scores)
         pol, _v = _NET.forward(kind[None], card[None], scal[None], mask[None],
                                _np.array([int(sel.get("context") or 0)]),
                                _np.array([int(sel.get("type") or 0)]))

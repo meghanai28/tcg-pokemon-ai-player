@@ -1,7 +1,9 @@
 # Track 2: Deep Monte Carlo (DouZero style)
 
-**Status: not yet implemented. This directory holds the design and the reason
-it is worth trying.**
+**Status: implemented and evaluated.** `train_dmc.py` is the simple Monte Carlo
+baseline; `qrsac.py` is the distributional actor/critic with option-only losses,
+leaderboard actor rehearsal, CUDA training, and CPU NumPy export. The root
+README is the source of truth for measured results and reproduction commands.
 
 ## The idea
 

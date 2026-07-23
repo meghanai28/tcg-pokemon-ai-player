@@ -1,0 +1,21 @@
+Loading environment chess failed: No module named 'kaggle_environments.envs.chess.chess'
+Loading environment llm_20_questions failed: No module named 'kaggle_environments.envs.llm_20_questions.llm_20_questions'
+Loading environment lux_ai_s2 failed: No module named 'kaggle_environments.envs.lux_ai_s2.lux_ai_s2'
+Loading environment open_spiel_env failed: No module named 'pokerkit'
+Loading environment werewolf failed: No module named 'pydantic'
+gauntlet: deck.csv piloted by pure-BC over 240 games
+
+  vs    mined_0: 12/67 =  18%
+  vs    mined_1: 3/43 =   7%
+  vs    mined_2: 3/22 =  14%
+  vs    mined_3: 0/14 =   0%
+  vs    mined_4: 5/14 =  36%
+  vs    mined_5: 2/13 =  15%
+  vs    mined_6: 4/12 =  33%
+  vs    mined_7: 4/12 =  33%
+  vs    mined_8: 1/12 =   8%
+  vs    mined_9: 8/12 =  67%
+  vs   mined_10: 2/12 =  17%
+  vs   mined_11: 4/7 =  57%
+
+deck.csv FIELD WIN RATE: 48/240 = 20.0% +/- 5% (95% CI)

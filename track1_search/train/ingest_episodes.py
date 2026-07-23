@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import hashlib
 import io
 import json
 import os
@@ -98,8 +99,13 @@ def iter_episodes(path):
                 continue
 
 
+def stable_id(value):
+    raw = str(value or "").encode("utf-8", "replace")
+    return int.from_bytes(hashlib.blake2b(raw, digest_size=8).digest(), "little")
+
+
 def episode_samples(ep, card_db, atk_db, elos, min_elo):
-    """Yield (features..., pi, z) for each decision by a qualifying player."""
+    """Yield (features..., pi, z, seat, pilot_id) for qualifying decisions."""
     steps = ep.get("steps") or []
     rewards = ep.get("rewards") or []
     info = ep.get("info") or {}
@@ -153,32 +159,47 @@ def episode_samples(ep, card_db, atk_db, elos, min_elo):
             pi /= s
             r = rewards[p] if rewards[p] is not None else 0
             yield (kind, card, scal, mask, int(sel.get("context") or 0),
-                   int(sel.get("type") or 0), pi, float(r))
+                   int(sel.get("type") or 0), pi, float(r), p,
+                   stable_id(names[p] if p < len(names) else None))
 
 
 def main():
+    global NF
     ap = argparse.ArgumentParser()
     ap.add_argument("episodes", help="dir or file of .json/.zip replays")
     ap.add_argument("--out", default=os.path.join(HERE, "data_bc"))
     ap.add_argument("--leaderboard", default=None)
     ap.add_argument("--min-elo", type=float, default=0.0)
     ap.add_argument("--max-samples", type=int, default=400000)
+    ap.add_argument("--features", choices=("base", "rich"), default="base",
+                    help="rich resolves area/index card references and records "
+                         "the extra selection fields used by the engine")
     a = ap.parse_args()
+
+    if a.features == "rich":
+        import nn_features_rich
+        NF = nn_features_rich
 
     card_db, atk_db = load_card_db()
     elos = load_elos(a.leaderboard)
-    print(f"leaderboard entries: {len(elos)}; min-elo filter: {a.min_elo}")
+    print(f"leaderboard entries: {len(elos)}; min-elo filter: {a.min_elo}; "
+          f"features: {a.features}")
 
-    acc = {k: [] for k in ("kind", "card", "scal", "mask", "ctx", "stype", "pi", "z")}
+    acc = {k: [] for k in (
+        "kind", "card", "scal", "mask", "ctx", "stype", "pi", "z",
+        "group", "seat", "pilot")}
     n_ep = 0
     for ep, name in iter_episodes(a.episodes):
         n_ep += 1
-        for (kind, card, scal, mask, ctx, styp, pi, z) in episode_samples(
+        group = stable_id(name)
+        for (kind, card, scal, mask, ctx, styp, pi, z, seat, pilot) in episode_samples(
                 ep, card_db, atk_db, elos, a.min_elo):
             acc["kind"].append(kind); acc["card"].append(card)
             acc["scal"].append(scal); acc["mask"].append(mask)
             acc["ctx"].append(ctx); acc["stype"].append(styp)
             acc["pi"].append(pi); acc["z"].append(z)
+            acc["group"].append(group); acc["seat"].append(seat)
+            acc["pilot"].append(pilot)
         if len(acc["pi"]) >= a.max_samples:
             print("hit --max-samples cap")
             break
@@ -200,6 +221,10 @@ def main():
         stype=np.array(acc["stype"], dtype=np.int16),
         pi=np.array(acc["pi"], dtype=np.float32),
         z=np.array(acc["z"], dtype=np.float32),
+        group=np.array(acc["group"], dtype=np.uint64),
+        seat=np.array(acc["seat"], dtype=np.int8),
+        pilot=np.array(acc["pilot"], dtype=np.uint64),
+        features=np.array(a.features),
     )
     print(f"wrote {path}: {len(acc['pi'])} samples from {n_ep} episodes")
     print(f"train with: py train/train_bc.py --data {a.out}")

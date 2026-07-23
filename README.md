@@ -8,7 +8,7 @@ Four tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 an
 
 > **This README is the project's source of truth and running memory.** The
 > "Track 2 results" section below is the most recent work: a study of RL as
-> search priors and a measured diagnosis of QR-SAC (2026-07-21).
+> search priors and a measured diagnosis of QR-SAC (updated 2026-07-22).
 
 ```
 track1_search/     determinized search + learned priors   
@@ -87,8 +87,10 @@ converging, so early readings are unreliable.
 | Submission | What it is | Score |
 |---|---|---|
 | ISO-A | search + network root priors | **819.8** |
-| ISO-B | identical, no network at all | 775.7 |
-| v4 | ISO-A base, model retrained on our own ladder games | 754.9 |
+| ISO-B | identical, no network at all | 774.6 |
+| scratch-DMC priors | search + scratch-DMC root priors | 733.5 |
+| mixed QR-SAC v2 | exploratory iter-25 mixed prior, ref 54912732 | **pending** |
+| v4 | ISO-A base, model retrained on our own ladder games | 726.4 |
 | v1 | first working agent, search + network priors | 739.2 |
 | v3 | v1 plus 5 changes that regressed | 603.6 |
 
@@ -135,69 +137,174 @@ policy head is exported via `export_npz` and Track 1 reads it at the root only.
 
 | Prior source | A/B win rate | Record | Note |
 |---|---|---|---|
-| **scratch-DMC** | **58.3%** | 14-10 (n=24) | best local; **submitted to ladder 2026-07-21** (result pending) |
+| **scratch-DMC** | **58.3%** | 14-10 (n=24) | ladder result 733.5; local gate inverted |
+| mixed QR-SAC v2, iter 5 | 50.0% | 12-12 (n=24) | leaderboard actor rehearsal + self-play critic |
+| mixed QR-SAC v2, iter 25 | 45.8% | 11-13 (n=24) | best offline checkpoint; exploratory package prepared |
+| mixed QR-SAC v1, iter 10 | 45.8% | 11-13 (n=24) | |
+| mixed QR-SAC v1, iter 15 | 21.4% | 3-11 (stopped) | clearly failed search gate |
 | QR-SAC (warm start) | 43.3% | 13-17 (n=30) | |
 | offline-DMC (136k logged) | 37.5% | | logged data only labels the *played* move, so it cannot rank alternatives |
 | hybrid warm-start | 36.7% | | warm-starting a regression head from cross-entropy logits actively hurt (iter-1 loss 10.8 vs 1.5) |
 
-The 58% vs 43% gap is **not statistically significant** (two-proportion z ≈ 1.1,
-p ≈ 0.27; both samples are tiny). And local A/Bs are known to invert on the
-ladder (see v3). So "QR-SAC is worse" is a confounded, noisy, 30-game read.
+The corrected mixed learner repaired original QR-SAC's local regression to
+rough parity, but did **not** beat the BC-prior agent. All 24-game confidence
+intervals are wide, and local A/Bs are known to invert on the ladder (see v3).
+There is no local evidence here for a 900+ score, much less 1900+. The exploratory
+`submission_qrsac_mixed_v2.tar.gz` was submitted on 2026-07-22 as Kaggle ref
+**54912732** and is pending. The scratch-DMC result is another warning against
+over-reading local gates: its 14-10 local win settled at only 733.5 on the ladder.
 
 ### Why QR-SAC underperformed — measured, not guessed
 
-Prior sharpness measured on 5,053 real decision states (`bc_917eps.npz`), over the
-**option tokens the deployed agent actually reads** (`main.py._net_scores`):
+Checkpoint screening on 5,053 real decisions (`bc_917eps.npz`), restricted to
+the **option tokens the deployed agent actually reads** (`main.py._net_scores`):
 
-| Deployed option prior | norm. entropy | logit spread | top-1 == strong-play move |
-|---|---|---|---|
-| BC | 0.77 | 4.29 | 41% |
-| scratch-DMC (winner) | 0.998 | **0.10** | 21% |
-| QR-SAC | 0.99 | 0.30 | 18% |
+| Prior | top-1 | cross entropy | norm. entropy | logit spread |
+|---|---:|---:|---:|---:|
+| BC (`model_v4`) | **52.29%** | **1.2865** | 0.7521 | 3.902 |
+| scratch-DMC | 30.83% | 1.7366 | **0.9982** | **0.056** |
+| original QR-SAC | 25.75% | 1.8080 | 0.9828 | 0.309 |
+| mixed QR-SAC v2, iter 5 | 46.51% | 1.5691 | 0.9636 | 0.686 |
+| mixed QR-SAC v2, iter 20 | 49.65% | 1.4183 | 0.8136 | 2.607 |
+| **mixed QR-SAC v2, iter 25** | 49.14% | **1.4117** | 0.7925 | 3.244 |
+| mixed QR-SAC v2, iter 40 | 50.62% | 1.5244 | 0.6527 | 8.105 |
 
-1. **The winning prior is essentially uniform** (spread 0.10 ≈ 1/n). Both RL models
-   failed to learn a *discriminative* option ranking. scratch-DMC wins not because
-   its ranking is good, but because a near-uniform prior + strong search beats
-   BC's sharper-but-imperfect prior — the same mechanism as the leaf-eval autopsy
-   (a confident prior makes PUCT commit early; a flat one keeps it exploring).
+1. **The self-play prior is essentially uniform** (spread 0.10 ≈ 1/n) and learns
+   no discriminative option ranking. Its 58% *local* win was a mirage: on the
+   ladder scratch-DMC settled at **733.5 — below** the no-net baseline (774.6) and
+   far below BC (819.8). So a near-uniform RL prior is not "good"; it is worse than
+   the heuristic. Among priors, BC's specific profile (entropy ~0.75, spread ~3.9)
+   is the ladder best, and both flatter (scratch-DMC) and over-sharp priors (below)
+   underperform it. The earlier "flat is good" reading was a local-A/B artifact.
 2. **QR-SAC's sophistication is invisible at deployment.** The distributional
    critic, entropy target, alpha tuning, and risk machinery all collapse to a
    single scalar per option. Its critic Q-mean is *even flatter* (entropy 0.997,
    spread 0.26). It pays a large complexity cost for the same kind of flat prior
    DMC produces more simply — this is why "simplest won."
-3. **It was never a controlled comparison.** scratch-DMC trained 90 iters × ~1875
-   grad-steps (~170k updates); the original QR-SAC ran 60 × 400 (~21k, ~8× fewer),
-   *and* warm-started, *and* fewer iters. Its actor loss was still monotonically
-   improving at the last iteration — undertrained on gradient updates.
+3. **Leaderboard data is useful for the actor, not the critic.** Regressing Q on
+   logged moves cannot rank unchosen alternatives and lost at 37.5%. Rehearsing
+   their search distributions with an option-only cross-entropy actor loss raised
+   QR-SAC agreement from 25.75% to about 49% without contaminating the Q target.
+   **Ablation (2026-07-22) confirms the critic is the wrong source.** With the
+   actor-normalization fixed but BC rehearsal OFF, the actor faithfully follows the
+   critic and produces a *sharp but wrong* prior (spread 6.5, only 17% agreement
+   with strong play) — confidently wrong, the exact leaf-eval failure mode. Every
+   bit of correct ranking in the mixed learner comes from BC rehearsal, so its
+   ceiling is **BC parity, not a win over BC.** To beat BC the self-play critic
+   would have to rank options better than BC's policy, and it ranks them worse.
+4. **The best optimization iterate is not the best prior.** By iter 40, agreement
+   rose but spread reached 8.1 and cross-entropy regressed. Preserved five-iteration
+   snapshots exposed the failure; selecting only the final loss would hide it.
 
-### Two implementation bugs in `qrsac.py` (found; fix pending)
+### Implementation bugs fixed on 2026-07-22
 
-1. **Actor normalization mismatch.** The actor loss softmaxes and entropy-targets
-   over all ~17 board + hand + global + option tokens (`mask > 0.5`), but `act()`
-   (data collection) and `_net_scores` (deployment) softmax over **option tokens
-   only**. The actor optimized the wrong distribution — the prime suspect for the
-   mushy option prior. Fix: restrict the actor loss and the `ln(n_act)` entropy
-   target to option positions.
-2. **Anchor over-flattens the critic.** The `--anchor` term pulls all ~16
-   non-action tokens toward the state value, dominating the loss and collapsing
-   the option-Q spread to ~0.1–0.3. Fix: restrict the anchor to option tokens.
+1. Actor softmax, expected Q, entropy, and `ln(n_actions)` now use kind-3 option
+   tokens only, matching collection and CPU deployment.
+2. QR-SAC and DMC anchors now use only *untaken option tokens* and divide by the
+   actual untaken-option count, not the transformer attention mask.
+3. Defaults now match the serious training budget (90 iterations, two replay
+   sweeps, 2,000-step cap), with CUDA training and CPU-compatible export.
+4. Leaderboard/search replay is rehearsed only through the actor. Q/value labels
+   still come from exploratory self-play outcomes.
+5. Alpha tuning now optimizes `log_alpha` directly so it can recover from a
+   near-zero temperature instead of losing its own gradient.
+6. Five-iteration snapshots are retained, and the latest deployable `.npz` is
+   refreshed, so an interrupted multi-hour run no longer loses every model.
 
-### Done / next
+### Remaining pitfalls
 
-- **DONE:** added `--epochs` to `qrsac.py` (ports DMC's 2-epoch buffer sweep; the
-  original QR-SAC did one capped 400-step pass and was ~8× under-trained).
-- **INTERRUPTED:** a controlled `qrsac.py --scratch --iters 90 --epochs 2
-  --max-steps 2000` run (only the *algorithm* differing from the winner) was
-  launched, then stopped by request around iter 20. No `model_qrsac_scratch.npz`
-  was produced; the `qrsac_variant` model and all committed models are unchanged.
-- **NEXT:** fix bugs 1 + 2 (option-restricted actor + anchor), re-run the
-  controlled scratch experiment, and gate with **≥ 40 games** (30 is
-  noise-limited). Success = option-agreement with strong play rising above BC's
-  41%, or a clear A/B win.
-- **If it still lands near-uniform / parity,** the conclusion is firm: no learned
-  prior beats a from-scratch flat prior in this slot, and the real lever is
-  **deck choice** — deck mining shows Alakazam at 48% field win rate vs Dragapult
-  at 65%, a ~17-point gap that dwarfs any prior-source delta measured all session.
+- Multi-select decisions greedily fill to `maxCount` and credit only the first
+  sampled option. Both DMC and QR-SAC therefore learn a lossy factorization of
+  combination actions.
+- Every move receives the final ±1 return. This is unbiased Monte Carlo credit
+  but extremely high variance across roughly 150 decisions per game.
+- The actor deploys, while the distributional Q head is training-only. QR-SAC's
+  extra machinery helps only indirectly through actor updates.
+- Twenty-four games cannot resolve small prior deltas, and the ladder has already
+  inverted a 9-3 local gate. Treat the exploratory package as an experiment.
+- No learned prior tested here clearly beats scratch-DMC's nearly uniform prior.
+  Deck choice remains the larger measured lever: Alakazam was 48% vs Dragapult
+  65% in field mining, a ~17-point gap.
+
+### Reproduce
+
+```powershell
+# Mixed QR-SAC: GPU training, CPU-compatible .npz export and 5-iter snapshots.
+py track2_dmc\qrsac.py --device cuda --iters 40 --games 10 --epochs 2 `
+  --max-steps 2000 --bc-data track1_search\train\data_bc --bc-weight 0.1 `
+  --bc-samples 20000 --bc-batch 64 --save-every 5 `
+  --out track2_dmc\model_qrsac_mixed_v2.npz
+
+# Screen snapshots. Use --backend numpy for the exact competition CPU path.
+py track2_dmc\eval_prior.py track2_dmc\model_qrsac_mixed_v2_iter*.npz `
+  --limit 5053 --backend torch --device cuda
+py track2_dmc\eval_prior.py track2_dmc\model_qrsac_mixed_v2_iter025.npz `
+  --limit 5053 --backend numpy
+
+# Deploy the selected checkpoint and run the local search gate.
+Copy-Item track2_dmc\model_qrsac_mixed_v2_iter025.npz `
+  track1_search\variants\qrsac_variant\model.npz -Force
+$env:PTCG_MAX_BUDGET="0.1"
+py tools\ab_test.py track1_search\variants\qrsac_variant track1_search\agent 24
+
+# Package and submit the exploratory CPU agent.
+cd track1_search\variants\qrsac_variant
+tar --exclude='*/__pycache__' --exclude='*.pyc' -czf `
+  ..\..\..\submission_qrsac_mixed_v2.tar.gz `
+  main.py deck.csv nn_features.py nn_infer.py model.npz cg
+cd ..\..\..
+py -m kaggle competitions submit pokemon-tcg-ai-battle `
+  -f submission_qrsac_mixed_v2.tar.gz `
+  -m "exploratory mixed QR-SAC v2 iter25; local 11-13"
+```
+
+---
+
+## Scaled pure-BC + deck selection (2026-07-22)
+
+Prompted by the leaderboard's top agent: **pure imitation learning on ~21k games,
+no search**, 3-4 h on one H200 — and their note that *"the same checkpoint can score
+very differently just by switching deck."* We tested the thesis at ~1/3 that scale.
+
+Setup: ingested all 2,091 ladder replays + the top daily-episode dataset (07-01,
+5,266 games) from the Kaggle episodes index, **elo-1000 filtered -> 291k
+decisions**. Trained a bigger policy (**dim 192 / 6 layers**, ~4x params) on GPU
+(`train_bc.py` now has `--device` + data-resident-on-GPU). Offline: **top-1 56.3%**
+(heuristic 37.5%), value MAE 0.074. Deployed as a **pure policy** (one forward,
+argmax, no search) via `track2_dmc/purebc_tools.py`.
+
+**Results:**
+- **#1 pure-BC vs our SEARCH agent, same deck, 40 games: 4-36 = 10% (LOCAL).**
+  Do NOT read this as "search wins." It is a local A/B against our OWN search
+  agent, and local A/Bs in this project invert on the ladder (see v3). Crucially,
+  that search agent only scores **~820** on the real ladder while the top of the
+  board is **pure imitation at ~1900** — so "loses to our 820 search agent locally"
+  is not the bar that matters. The ladder is the judge and we had **never put a
+  pure-net agent on it**. => we are now submitting the scaled pure-BC to get its
+  real ladder score (see "Submitted" below).
+- **#2 deck gauntlet, SAME pure-BC checkpoint, field-weighted, 240 games each:**
+  **Alakazam (our deck) 40.4% +/- 6%  vs  Dragapult 20.0% +/- 5%.**
+  **Deck strength is PILOT-DEPENDENT.** The "Dragapult 65% field WR" from mining is
+  how the FIELD pilots it; our checkpoint pilots Alakazam **twice as well**. Naively
+  switching decks would HALVE our win rate. To exploit a stronger deck we must
+  retrain the pilot on that deck's games.
+
+**Submitted (2026-07-23, ref 54920652):** the scaled pure-BC agent —
+`submission_purebc_scaled.tar.gz`, dim192/6L policy, argmax over options, **NO
+search**, deck Alakazam. **PENDING** — read its ladder score in ~24h. First pure-net
+(no-search) agent we have ever put on the ladder. Build lives at
+`track1_search/variants/purebc_submit/` (copy of the search agent with `model.npz`
+= `train/model_bc_big.npz` and one added pure-policy branch that returns the net's
+argmax before search runs); `nn_infer` reads dim/layers from `_meta`, so the bigger
+net drops in unchanged. Net cost ~39 ms/call, ~6 s/game — no timeout risk.
+
+**Takeaways:** our search line caps **~820** on the ladder while the frontier is
+scaled pure imitation (**~1900**), so the local search-vs-policy A/B is NOT the
+verdict — the ladder is (this project has inverted local gates before). Deck choice
+is **pilot-dependent** (our net pilots Alakazam 2x better than Dragapult), so we
+submit WITH Alakazam. `purebc_tools.py gauntlet` is a cheap no-search deck-fit
+tester. Next: read the pure-BC ladder score; if promising, scale data toward 21k
+(more top days from the index) and grow the net; fix the mild post-ep10 CE overfit.
 
 ---
 
