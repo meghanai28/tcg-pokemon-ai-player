@@ -8,13 +8,14 @@ Four tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 an
 
 > **This README is the project's source of truth and running memory.** The
 > "Track 2 results" section below is the most recent work: a study of RL as
-> search priors and a measured diagnosis of QR-SAC (updated 2026-07-22).
+> search priors, a measured diagnosis of QR-SAC, and corrected replay imitation
+> features (updated 2026-07-23).
 
 ```
-track1_search/     determinized search + learned priors   
-track2_dmc/        Deep Monte Carlo, no search            
-track3_oracle/     oracle guided hidden info learning     
-track4_policygrad/ Delightful Gradient policy gradient    
+track1_search/     determinized search + learned priors
+track2_dmc/        Deep Monte Carlo, no search
+track3_oracle/     oracle guided hidden info learning
+track4_policygrad/ Delightful Gradient policy gradient
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
@@ -84,12 +85,14 @@ Every number below is a settled or in progress public score from the Kaggle
 ladder, not a local estimate. Submissions seed at 600 and overshoot before
 converging, so early readings are unreliable.
 
-| Submission | What it is | Score |
+| Submission | What it is | Public score (2026-07-23 snapshot) |
 |---|---|---|
+| rich-BC search | fixed replay features + policy root priors, ref 54929162 | **600.0 initial seed; stabilizing** |
 | ISO-A | search + network root priors | **819.8** |
 | ISO-B | identical, no network at all | 774.6 |
-| scratch-DMC priors | search + scratch-DMC root priors | 733.5 |
-| mixed QR-SAC v2 | exploratory iter-25 mixed prior, ref 54912732 | **pending** |
+| mixed QR-SAC v2 | exploratory iter-25 mixed prior, ref 54912732 | 722.5 |
+| scratch-DMC priors | search + scratch-DMC root priors | 718.1 |
+| scaled pure BC | 192d/6L argmax policy, no search, ref 54920652 | 615.9 |
 | v4 | ISO-A base, model retrained on our own ladder games | 726.4 |
 | v1 | first working agent, search + network priors | 739.2 |
 | v3 | v1 plus 5 changes that regressed | 603.6 |
@@ -130,14 +133,14 @@ Two self-play learners are implemented:
   on untaken options.
 
 Both **deploy as root move-ordering priors** for Track 1 search — the only
-network placement that has ever paid off (see ISO-A 819.8 vs ISO-B 775.7). The
+network placement that has ever paid off (see ISO-A 819.8 vs ISO-B 774.6). The
 policy head is exported via `export_npz` and Track 1 reads it at the root only.
 
 ### RL-as-priors results — A/B vs the BC-prior agent
 
 | Prior source | A/B win rate | Record | Note |
 |---|---|---|---|
-| **scratch-DMC** | **58.3%** | 14-10 (n=24) | ladder result 733.5; local gate inverted |
+| **scratch-DMC** | **58.3%** | 14-10 (n=24) | ladder result 718.1; local gate inverted |
 | mixed QR-SAC v2, iter 5 | 50.0% | 12-12 (n=24) | leaderboard actor rehearsal + self-play critic |
 | mixed QR-SAC v2, iter 25 | 45.8% | 11-13 (n=24) | best offline checkpoint; exploratory package prepared |
 | mixed QR-SAC v1, iter 10 | 45.8% | 11-13 (n=24) | |
@@ -151,8 +154,9 @@ rough parity, but did **not** beat the BC-prior agent. All 24-game confidence
 intervals are wide, and local A/Bs are known to invert on the ladder (see v3).
 There is no local evidence here for a 900+ score, much less 1900+. The exploratory
 `submission_qrsac_mixed_v2.tar.gz` was submitted on 2026-07-22 as Kaggle ref
-**54912732** and is pending. The scratch-DMC result is another warning against
-over-reading local gates: its 14-10 local win settled at only 733.5 on the ladder.
+**54912732** and scored **722.5** in the latest 2026-07-23 snapshot. The scratch-DMC
+result is another warning against over-reading local gates: its 14-10 local win
+is only **718.1** on the same snapshot.
 
 ### Why QR-SAC underperformed — measured, not guessed
 
@@ -171,7 +175,7 @@ the **option tokens the deployed agent actually reads** (`main.py._net_scores`):
 
 1. **The self-play prior is essentially uniform** (spread 0.10 ≈ 1/n) and learns
    no discriminative option ranking. Its 58% *local* win was a mirage: on the
-   ladder scratch-DMC settled at **733.5 — below** the no-net baseline (774.6) and
+   ladder scratch-DMC reached only **718.1 — below** the no-net baseline (774.6) and
    far below BC (819.8). So a near-uniform RL prior is not "good"; it is worse than
    the heuristic. Among priors, BC's specific profile (entropy ~0.75, spread ~3.9)
    is the ladder best, and both flatter (scratch-DMC) and over-sharp priors (below)
@@ -266,45 +270,107 @@ Prompted by the leaderboard's top agent: **pure imitation learning on ~21k games
 no search**, 3-4 h on one H200 — and their note that *"the same checkpoint can score
 very differently just by switching deck."* We tested the thesis at ~1/3 that scale.
 
-Setup: ingested all 2,091 ladder replays + the top daily-episode dataset (07-01,
-5,266 games) from the Kaggle episodes index, **elo-1000 filtered -> 291k
-decisions**. Trained a bigger policy (**dim 192 / 6 layers**, ~4x params) on GPU
-(`train_bc.py` now has `--device` + data-resident-on-GPU). Offline: **top-1 56.3%**
-(heuristic 37.5%), value MAE 0.074. Deployed as a **pure policy** (one forward,
-argmax, no search) via `track2_dmc/purebc_tools.py`.
+Correction after auditing the files: the 291,035-decision training directory was
+the 5,266-game, Elo-1000-filtered daily shard (179,079 decisions) plus the older
+917-episode shard (111,956 decisions). The separately ingested 2,091-replay
+unfiltered shard was **not** in that directory. The model was **dim 192 / 6
+layers, 2.064M parameters** (5.65x the 365k baseline, not ~4x).
 
 **Results:**
-- **#1 pure-BC vs our SEARCH agent, same deck, 40 games: 4-36 = 10% (LOCAL).**
-  Do NOT read this as "search wins." It is a local A/B against our OWN search
-  agent, and local A/Bs in this project invert on the ladder (see v3). Crucially,
-  that search agent only scores **~820** on the real ladder while the top of the
-  board is **pure imitation at ~1900** — so "loses to our 820 search agent locally"
-  is not the bar that matters. The ladder is the judge and we had **never put a
-  pure-net agent on it**. => we are now submitting the scaled pure-BC to get its
-  real ladder score (see "Submitted" below).
+- **Pure BC vs search, same deck: 4-36 (10%) locally.**
+- **Leaderboard ref 54920652: 615.9** in the 2026-07-23 snapshot, versus 819.8
+  for search + the old BC root prior. The local loss was a valid warning.
 - **#2 deck gauntlet, SAME pure-BC checkpoint, field-weighted, 240 games each:**
   **Alakazam (our deck) 40.4% +/- 6%  vs  Dragapult 20.0% +/- 5%.**
-  **Deck strength is PILOT-DEPENDENT.** The "Dragapult 65% field WR" from mining is
-  how the FIELD pilots it; our checkpoint pilots Alakazam **twice as well**. Naively
-  switching decks would HALVE our win rate. To exploit a stronger deck we must
-  retrain the pilot on that deck's games.
+  This uses the same learned pilot on both seats, so it measures model/deck fit,
+  not a real field win rate. It still warns that deck choice is pilot-dependent.
 
-**Submitted (2026-07-23, ref 54920652):** the scaled pure-BC agent —
-`submission_purebc_scaled.tar.gz`, dim192/6L policy, argmax over options, **NO
-search**, deck Alakazam. **PENDING** — read its ladder score in ~24h. First pure-net
-(no-search) agent we have ever put on the ladder. Build lives at
-`track1_search/variants/purebc_submit/` (copy of the search agent with `model.npz`
-= `train/model_bc_big.npz` and one added pure-policy branch that returns the net's
-argmax before search runs); `nn_infer` reads dim/layers from `_meta`, so the bigger
-net drops in unchanged. Net cost ~39 ms/call, ~6 s/game — no timeout risk.
+Why its offline metric misled us:
 
-**Takeaways:** our search line caps **~820** on the ladder while the frontier is
-scaled pure imitation (**~1900**), so the local search-vs-policy A/B is NOT the
-verdict — the ladder is (this project has inverted local gates before). Deck choice
-is **pilot-dependent** (our net pilots Alakazam 2x better than Dragapult), so we
-submit WITH Alakazam. `purebc_tools.py gauntlet` is a cheap no-search deck-fit
-tester. Next: read the pure-BC ladder score; if promising, scale data toward 21k
-(more top days from the index) and grow the net; fix the mild post-ep10 CE overfit.
+- validation randomly split individual decisions, leaking neighboring states from
+  the same games across train and validation;
+- policy CE normalized over every state token even though deployment ranks only
+  legal option tokens;
+- the reported "heuristic 37.5%" gate was actually raw option 0, because replay
+  ingestion did not heuristic-sort the options;
+- validation CE was best at epoch 13 (1.2336) but the exported epoch-20 model had
+  regressed to 1.5064; and
+- most importantly, legal card options usually provide `area + index`, not
+  `cardId`. The encoder ignored `index`, so many distinct cards were represented
+  as the same zero-ID option. More data cannot repair a missing input.
+
+---
+
+## Rich replay policy + search (2026-07-23)
+
+`nn_features_rich.py` fixes the action representation without changing the
+53-token/32-scalar CPU ABI. It resolves cards from deck, hand, discard, active,
+bench, prize, and attached-card references; records source/target indices,
+effect cards, and remaining effect resources; and preserves engine option order
+at inference. `ingest_episodes.py` now records stable episode and pilot IDs.
+
+`train_bc.py` now:
+
+- splits whole episodes (or pilots), not individual decisions;
+- applies CE only to legal option tokens;
+- supports policy-only training and critical-context weighting; and
+- early-stops and exports the checkpoint with best held-out option CE.
+
+GPU run: 5,266 daily episodes, Elo >= 1000, 179,079 decisions; 151,868 training
+and 27,211 held-out decisions across disjoint episodes. The 128d/4-layer/4-head
+policy has 717,698 parameters. Best epoch was 15/20:
+
+| Metric | Old scaled pure BC | Rich BC |
+|---|---:|---:|
+| validation split | random decisions | disjoint episodes |
+| held-out top-1 | 56.3% | **75.1%** |
+| held-out option CE | 1.5064 at exported epoch 20 | **0.7125** at restored epoch 15 |
+| local result vs ISO-A search | 4-36 as a pure policy | **19-5** as search priors |
+
+The candidate retains the proven determinized search and uses the rich policy
+only for root move ordering. Exact competition CPU packaging passed a smoke
+match. Submitted as `submission_richbc_search.tar.gz`, Kaggle ref **54929162**.
+Kaggle accepted it and assigned the normal **600.0 initial seed**; allow roughly
+7-12 hours of matches before comparing it with stabilized agents.
+
+### Reproduce rich-BC search
+
+```powershell
+# 1) Build corrected replay features directly from the compressed daily export.
+py track1_search\train\ingest_episodes.py `
+  data\replays_daily\pokemon-tcg-ai-battle-episodes-2026-07-01.zip `
+  --out track1_search\train\data_bc_rich `
+  --leaderboard data\leaderboard\pokemon-tcg-ai-battle-publicleaderboard-2026-07-21T07_12_03.csv `
+  --min-elo 1000 --features rich --max-samples 400000
+
+# 2) GPU training; the exported model still runs through NumPy on competition CPU.
+py track1_search\train\train_bc.py `
+  --data track1_search\train\data_bc_rich --features rich --split episode `
+  --epochs 20 --patience 4 --batch 256 --lr 0.0006 `
+  --dim 128 --layers 4 --heads 4 --value-weight 0 --critical-weight 1.5 `
+  --device cuda --out track1_search\variants\richbc_search\model.npz
+
+# 3) Controlled game gate against the 819.8 ISO-A code.
+$env:PTCG_MAX_BUDGET="0.1"
+py tools\ab_test.py track1_search\variants\richbc_search track1_search\agent 24
+Remove-Item Env:\PTCG_MAX_BUDGET
+
+# 4) Package the exact CPU agent. The archive must contain all files at its root.
+tar --exclude='*/__pycache__' --exclude='*.pyc' -czf submission_richbc_search.tar.gz `
+  -C track1_search\agent main.py deck.csv nn_features.py nn_infer.py cg `
+  -C ..\train nn_features_rich.py `
+  -C ..\variants\richbc_search model.npz
+
+py -m kaggle competitions submit pokemon-tcg-ai-battle `
+  -f submission_richbc_search.tar.gz `
+  -m "rich-BC search: fixed area/index card resolution; 75.1% episode-heldout; 19-5 vs ISO-A"
+```
+
+Next scaling step: add non-overlapping high-rated days with the same rich
+features, keep a final day and unseen pilots fully held out, and train deck-aware
+or deck-specific policies. Do not increase model size again until held-out CE
+stops improving at the current 718k-parameter scale. QR-SAC should remain an
+ablation unless its self-play critic can beat this policy's option ranking.
 
 ---
 

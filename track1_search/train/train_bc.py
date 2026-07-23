@@ -157,7 +157,8 @@ def main():
                 d["kind"][s:e].astype(np.int64), d["card"][s:e].astype(np.int64),
                 d["scal"][s:e], d["mask"][s:e],
                 d["ctx"][s:e].astype(np.int64), d["stype"][s:e].astype(np.int64))
-            x = np.where(d["mask"][s:e] < 0.5, -1e9, pol)
+            options = ((d["kind"][s:e] == 3) & (d["mask"][s:e] > 0.5))
+            x = np.where(options, pol, -1e9)
             x = x - x.max(-1, keepdims=True)
             p = np.exp(x); p /= p.sum(-1, keepdims=True)
             tl[s:e] = p
@@ -239,7 +240,8 @@ def main():
                 # played move for replay data, the most visited for search
                 # data). Regress its Q toward the realised return.
                 taken = pi.argmax(-1)
-                q_taken = logits[torch.arange(len(taken)), taken]
+                q_taken = logits[
+                    torch.arange(len(taken), device=taken.device), taken]
                 lp = ((q_taken - z) ** 2).mean()
             else:
                 per_sample, _option_logits = option_policy_loss(
