@@ -85,17 +85,23 @@ Every number below is a settled or in progress public score from the Kaggle
 ladder, not a local estimate. Submissions seed at 600 and overshoot before
 converging, so early readings are unreliable.
 
-| Submission | What it is | Public score (2026-07-23 snapshot) |
+| Submission | What it is | Public score (2026-07-25 snapshot) |
 |---|---|---|
-| rich-BC search | fixed replay features + policy root priors, ref 54929162 | **600.0 initial seed; stabilizing** |
-| ISO-A | search + network root priors | **819.8** |
+| **deck-aware rich BC** | 160d/5L deck-conditioned priors, deck Alakazam, ref 54966427 | **878.9 (provisional, <1 day old)** |
+| **rich-BC search** | fixed replay features + policy root priors, ref 54929162 | **873.5 (settled)** |
+| ISO-A | search + network root priors | 819.8 |
 | ISO-B | identical, no network at all | 774.6 |
 | mixed QR-SAC v2 | exploratory iter-25 mixed prior, ref 54912732 | 722.5 |
 | scratch-DMC priors | search + scratch-DMC root priors | 718.1 |
-| scaled pure BC | 192d/6L argmax policy, no search, ref 54920652 | 615.9 |
+| scaled pure BC | 192d/6L argmax policy, no search, ref 54920652 | 591.1 |
 | v4 | ISO-A base, model retrained on our own ladder games | 726.4 |
 | v1 | first working agent, search + network priors | 739.2 |
 | v3 | v1 plus 5 changes that regressed | 603.6 |
+
+Rich-BC search settled at **873.5**, +53.7 over ISO-A. That is the first time a
+learned component has clearly paid for itself, and it confirms the diagnosis in
+the scaled pure-BC section: the earlier networks were not too weak, their
+*action representation* was broken.
 
 ISO-A and ISO-B are a controlled experiment: byte identical except for the
 presence of `model.npz`. They were submitted seconds apart so they seed in the
@@ -371,6 +377,100 @@ features, keep a final day and unseen pilots fully held out, and train deck-awar
 or deck-specific policies. Do not increase model size again until held-out CE
 stops improving at the current 718k-parameter scale. QR-SAC should remain an
 ablation unless its self-play critic can beat this policy's option ranking.
+
+---
+
+## Deck-aware rich BC, 4 days (2026-07-25)
+
+The scaling step above, executed. Two changes on top of rich-BC search:
+
+1. **Deck conditioning.** `nn_features_rich.py` now sets the global token's card
+   id to a **deck anchor** (the most-played Pokemon, ties broken toward
+   stage-2/ex) and fills seven previously unused global scalars `g[24:31]` with
+   the deck's card-type mix. Replay ingestion recovers each pilot's real 60-card
+   list from `steps[1][player].action`; at inference our own deck is known
+   exactly. Slots `g[24:31]` were verified unused by the base and rich encoders,
+   so the 53-token/32-scalar CPU ABI is unchanged.
+2. **More days.** 0701 + 0720 + 0721 + 0722 = **1,332,771 decisions**
+   (15,621 episodes), Elo >= 1000. Day **0723 is a pure temporal holdout**.
+   Model grew to **160d/5L/5H, 1.267M parameters**.
+
+`ingest_episodes.py` also records per-decision `elo` and accepts a zipped
+leaderboard; `train_bc.py` gained label smoothing, dropout, per-shard caps,
+Elo/winner sample weighting and CPU-streamed tensors for when the set no longer
+fits on an 8 GB card.
+
+### Measured against the 873.5 agent
+
+Option-restricted metrics on the unseen day, identical decisions for both models.
+The 128d/4L champion is evaluated with `--strip-deck`, which zeroes exactly the
+inputs it never trained on, so it runs its original ABI.
+
+| Holdout slice | deck-aware 160d/5L | rich-BC 128d/4L (873.5) |
+|---|---:|---:|
+| full unseen day 0723 (40k decisions) | **70.96%** / CE 0.808 | 52.97% / CE 2.147 |
+| **unseen pilots only** (8 pilots, 12k) | **74.71%** / CE 0.694 | 54.43% / CE 2.103 |
+| our own deck's decisions (anchor 743) | **73.69%** / CE 0.763 | 56.48% / CE 1.450 |
+| deck features stripped (ablation) | 68.39% / CE 0.890 | — |
+| same test on the **NumPy competition path** | 71.45% | 52.70% |
+
+- The gap is **not** pilot memorisation: it is *larger* on pilots that appear in
+  no training day.
+- Deck conditioning is worth about **+2.6 points** on its own (70.96 vs 68.39).
+  Most of the gain is the extra data and capacity.
+- The champion scores **78.35% on its own training day** and 52.97% on a day one
+  week later. Single-day training generalised much worse than its own held-out
+  episode split suggested.
+- Latency is a non-issue: **6.9 ms/call, ~1.0 s/game** against `main.py`'s 90 s
+  guard, so the larger net cannot silently disable itself on Kaggle's 2 vCPUs.
+
+**Game gate: 22W-2L (91.7%) vs the 873.5 agent**, 24 games, `PTCG_MAX_BUDGET=0.1`
+(`results/ab_richbc21k_vs_champion.log`). The strongest local gate this project
+has produced, and unlike v3's 9-3 it is corroborated by a large offline gap on
+data neither model trained on.
+
+Submitted as ref **54966427**, showing **878.9** provisionally within hours.
+
+### Three tooling bugs found while gating this
+
+All three silently corrupted *evaluation*, not the agent:
+
+1. **`tools/gauntlet.py` never worked with a search agent.** kaggle_environments
+   calls agents as `agent(*[observation, configuration][:co_argcount])`, so the
+   3-parameter helper `def my_agent(obs, _m=me, _d=deck)` received
+   `configuration` as `_m`. Every real decision raised on `configuration.agent`
+   and that seat forfeited, so the tool reported games decided purely by seat
+   order — two different decks produced byte-identical output. Seats are now
+   single-parameter closures. The same helper also swallowed the
+   `select is None` call, which is the agent's only untimed call and the one
+   that loads the engine, card DB and net; the opponent seat now also gets its
+   `MY_DECK` set to the deck it is actually piloting, which matters now that the
+   policy is deck-conditioned.
+2. **`main.py` leaked one encoder across agents.** `_load_net` imported the
+   feature module by bare name, so `sys.modules` handed every agent in the
+   process whichever copy loaded first. An A/B between two variants that both
+   ship `nn_features_rich.py` compared one encoder against itself — here it
+   would have fed the champion deck features it never trained on and flattered
+   the new model. Each agent now loads its encoder from its own directory under
+   a directory-unique alias; Kaggle runs one agent per process, where this is a
+   no-op.
+3. **`eval_prior.py` re-decompressed the whole shard per batch.** It indexed an
+   open `NpzFile` inside the loop, re-inflating ~2.7 GB for every batch of every
+   model. It now materialises the sampled rows once.
+
+### Caveats
+
+- **The training command was not logged.** Label smoothing, dropout, Elo and
+  winner weighting all exist now, but which were actually used for this
+  checkpoint is not recorded. Log the invocation for the next run.
+- Three of four shards stopped at the `--max-samples 400000` cap, so those days
+  are **truncated in archive order, not sampled**. `--max-per-shard` exists to
+  rebalance and was likely not used.
+- The 0701 shard is smaller than the champion's (132,699 vs 179,079 decisions)
+  because a newer leaderboard snapshot qualifies **9 pilots instead of 12** at
+  Elo >= 1000. Ratings drifted; this is expected, not a filtering bug.
+- Local A/Bs have inverted on the ladder before (v3, 9-3 local to a 25-point
+  ladder regression). 878.9 is provisional and under a day old.
 
 ---
 

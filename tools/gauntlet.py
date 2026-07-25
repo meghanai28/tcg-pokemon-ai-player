@@ -35,6 +35,30 @@ def load(path, alias):
     return m
 
 
+def seat(module, decklist):
+    """Bind one agent module to the deck it pilots for a single seat.
+
+    The returned callable takes exactly ONE argument on purpose.
+    kaggle_environments calls agents as ``agent(*[observation, configuration]
+    [:co_argcount])``, so a helper that carried its state in default arguments
+    (``def play(obs, _m=module, _d=deck)``) had ``configuration`` handed to it
+    as ``_m``.  Every real decision then raised on ``configuration.agent`` and
+    the seat forfeited, which silently made this gauntlet report games decided
+    purely by seat order.  Capture state by closure instead.
+
+    The deck-selection call (``select is None``) is also the agent's only
+    untimed call: it loads the engine, card DB and net and resets the per-game
+    tracker, so it must reach the agent rather than being answered here.
+    """
+    def play(obs):
+        if obs.get("select") is None:
+            module.agent(obs)                  # warm up + reset the tracker
+            module.MY_DECK = list(decklist)    # pilot the deck we hand back
+            return list(decklist)
+        return module.agent(obs)
+    return play
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("agent")
@@ -43,7 +67,10 @@ def main():
     a = ap.parse_args()
 
     me = load(a.agent, "gauntlet_me")
-    opp_mod = load(a.opponent_agent, "gauntlet_opp") if a.opponent_agent else me
+    # Always a SEPARATE module instance for the opponent seat: the two seats
+    # keep their own MY_DECK and per-game tracker, so one cannot clobber the
+    # other's belief about which deck it is piloting.
+    opp_mod = load(a.opponent_agent or a.agent, "gauntlet_opp")
     my_deck = me._load_deck()
 
     # weights = appearance counts from the mining run
@@ -66,15 +93,8 @@ def main():
         for g in range(n):
             env = make("cabt")
 
-            def my_agent(obs, _m=me, _d=my_deck):
-                if obs.get("select") is None:
-                    return list(_d)
-                return _m.agent(obs)
-
-            def opp_agent(obs, _m=opp_mod, _d=deck):
-                if obs.get("select") is None:
-                    return list(_d)
-                return _m.agent(obs)
+            my_agent = seat(me, my_deck)
+            opp_agent = seat(opp_mod, deck)
 
             if g % 2 == 0:
                 env.run([my_agent, opp_agent]); mi = 0

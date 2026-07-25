@@ -34,7 +34,7 @@ from model import TCGNet, export_npz  # noqa: E402
 CRITICAL_CONTEXTS = (0, 3, 4, 13, 14, 15, 16, 21, 22, 25, 35, 43)
 
 
-def option_policy_loss(logits, pi, kind, mask):
+def option_policy_loss(logits, pi, kind, mask, label_smoothing=0.0):
     """Per-sample CE over the legal option tokens used by deployment."""
     options = (kind == 3) & (mask > 0.5)
     if not bool(options.any(dim=-1).all()):
@@ -43,7 +43,11 @@ def option_policy_loss(logits, pi, kind, mask):
     logp = torch.log_softmax(option_logits, dim=-1)
     # Avoid 0 * -inf on non-option tokens.
     safe_logp = torch.where(options, logp, torch.zeros_like(logp))
-    return -(pi * safe_logp).sum(-1), option_logits
+    target = pi
+    if label_smoothing:
+        uniform = options.float() / options.sum(-1, keepdim=True)
+        target = (1.0 - label_smoothing) * pi + label_smoothing * uniform
+    return -(target * safe_logp).sum(-1), option_logits
 
 
 def eval_val(model, va, dev, batch=512):
@@ -69,26 +73,36 @@ def eval_val(model, va, dev, batch=512):
     return ce / n, vmse / n, t1 / n, vmae / n
 
 
-def load_data(data_dir):
+def load_data(data_dir, max_per_shard=0):
     files = sorted(glob.glob(os.path.join(data_dir, "*.npz")))
     if not files:
         raise SystemExit(f"no shards in {data_dir} -- run train/selfplay.py first")
     required = ("kind", "card", "scal", "mask", "ctx", "stype", "pi", "z")
-    optional = ("group", "pilot", "seat")
+    optional = ("group", "pilot", "seat", "elo")
     parts = {k: [] for k in required}
     optional_parts = {k: [] for k in optional}
-    for f in files:
+    kept = 0
+    for file_index, f in enumerate(files):
         d = np.load(f)
+        take = None
+        shard_n = len(d["pi"])
+        if max_per_shard and shard_n > max_per_shard:
+            rng = np.random.default_rng(917 + file_index)
+            take = np.sort(rng.choice(
+                shard_n, size=max_per_shard, replace=False))
         for k in parts:
-            parts[k].append(d[k])
+            parts[k].append(d[k] if take is None else d[k][take])
         for k in optional:
             if k in d:
-                optional_parts[k].append(d[k])
+                optional_parts[k].append(
+                    d[k] if take is None else d[k][take])
+        kept += shard_n if take is None else len(take)
     out = {k: np.concatenate(v, axis=0) for k, v in parts.items()}
     for k, values in optional_parts.items():
         if len(values) == len(files):
             out[k] = np.concatenate(values, axis=0)
-    print(f"loaded {len(files)} shards, {out['pi'].shape[0]} samples")
+    cap_note = f", cap {max_per_shard}/shard" if max_per_shard else ""
+    print(f"loaded {len(files)} shards, {kept} samples{cap_note}")
     return out
 
 
@@ -102,21 +116,35 @@ def main():
     ap.add_argument("--batch", type=int, default=128)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--val-frac", type=float, default=0.15)
+    ap.add_argument("--max-per-shard", type=int, default=0,
+                    help="deterministically cap each shard to balance dense days")
     ap.add_argument("--split", choices=("auto", "decision", "episode", "pilot"),
                     default="auto", help="auto uses episode groups when present")
     ap.add_argument("--out", default=os.path.join(HERE, "model_bc.npz"))
     ap.add_argument("--dim", type=int, default=96, help="model width")
     ap.add_argument("--layers", type=int, default=3)
     ap.add_argument("--heads", type=int, default=4)
+    ap.add_argument("--dropout", type=float, default=0.0,
+                    help="training-only residual/embedding dropout")
     ap.add_argument("--features", choices=("base", "rich"), default="base")
     ap.add_argument("--value-weight", type=float, default=0.5,
                     help="set near zero for a policy-only search prior")
     ap.add_argument("--critical-weight", type=float, default=1.0,
                     help="relative weight for strategic selection contexts")
+    ap.add_argument("--label-smoothing", type=float, default=0.0,
+                    help="smooth replay actions over legal options (0..1)")
+    ap.add_argument("--elo-weight", type=float, default=0.0,
+                    help="upweight stronger pilots by up to this fraction")
+    ap.add_argument("--winner-weight", type=float, default=1.0,
+                    help="relative weight for winner decisions; losers receive "
+                         "the reciprocal weight")
     ap.add_argument("--patience", type=int, default=4,
                     help="early-stop patience on held-out option-only CE; 0 disables")
     ap.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto",
                     help="training device; auto uses CUDA when available")
+    ap.add_argument("--gpu-resident", choices=("auto", "yes", "no"),
+                    default="auto", help="keep tensors on GPU when they fit; "
+                                         "otherwise stream batches from CPU")
     ap.add_argument("--distill", default=None,
                     help="teacher .npz; student also matches its outputs")
     ap.add_argument("--dmc", action="store_true",
@@ -126,6 +154,14 @@ def main():
                          "have (pro replays, self play, ExIt, our own ladder "
                          "games) rather than only fresh self play.")
     a = ap.parse_args()
+    if not 0.0 <= a.label_smoothing < 1.0:
+        ap.error("--label-smoothing must be in [0, 1)")
+    if not 0.0 <= a.dropout < 1.0:
+        ap.error("--dropout must be in [0, 1)")
+    if a.elo_weight < 0:
+        ap.error("--elo-weight must be non-negative")
+    if a.winner_weight <= 0:
+        ap.error("--winner-weight must be positive")
     if a.device == "cuda" and not torch.cuda.is_available():
         ap.error("--device cuda requested but CUDA is unavailable")
     dev = torch.device("cuda" if (a.device != "cpu" and torch.cuda.is_available())
@@ -136,9 +172,11 @@ def main():
         import nn_features_rich
         NF = nn_features_rich
         _m.NF = nn_features_rich
-    _m.D_MODEL, _m.N_LAYERS, _m.N_HEADS, _m.D_FF = a.dim, a.layers, a.heads, 2 * a.dim
+    _m.D_MODEL, _m.N_LAYERS, _m.N_HEADS, _m.D_FF = (
+        a.dim, a.layers, a.heads, 2 * a.dim)
+    _m.DROPOUT = a.dropout
 
-    d = load_data(a.data)
+    d = load_data(a.data, a.max_per_shard)
     n = d["pi"].shape[0]
 
     if a.distill:
@@ -167,7 +205,7 @@ def main():
         d["z"] = 0.5 * d["z"] + 0.5 * tv.astype(np.float32)
         print(f"distilling from {a.distill}: targets blended 50/50")
     rng = np.random.default_rng(0)
-    val_d = load_data(a.val_data) if a.val_data else d
+    val_d = load_data(a.val_data, a.max_per_shard) if a.val_data else d
     if a.val_data:
         tr_idx = np.arange(n)
         val_idx = np.arange(len(val_d["pi"]))
@@ -206,14 +244,41 @@ def main():
 
     tr = to_t(d, tr_idx)
     va = to_t(val_d, val_idx)
+    sample_weight = np.ones(len(tr_idx), dtype=np.float32)
+    if a.elo_weight:
+        if "elo" not in d:
+            ap.error("--elo-weight requires elo metadata; re-run ingestion")
+        strength = np.clip(
+            (d["elo"][tr_idx].astype(np.float32) - 1000.0) / 250.0,
+            0.0, 1.0)
+        sample_weight *= 1.0 + a.elo_weight * strength
+    if a.winner_weight != 1.0:
+        outcomes = d["z"][tr_idx]
+        sample_weight *= np.where(
+            outcomes > 0, a.winner_weight,
+            np.where(outcomes < 0, 1.0 / a.winner_weight, 1.0)
+        ).astype(np.float32)
+    sample_weight /= sample_weight.mean()
+    train_weight = torch.tensor(sample_weight)
+    resident = False
+    tensor_bytes = sum(
+        t.numel() * t.element_size() for group in (tr, va) for t in group)
+    tensor_bytes += train_weight.numel() * train_weight.element_size()
     if dev.type == "cuda":
-        # Keep the whole set resident on the GPU: the dataset is ~2 GB and the
-        # 8 GB card fits it easily, which removes the per-batch host->device copy
-        # that otherwise starves the GPU and dominates wall-clock.
+        free_bytes, _total_bytes = torch.cuda.mem_get_info()
+        resident = (a.gpu_resident == "yes" or
+                    (a.gpu_resident == "auto" and
+                     tensor_bytes < 0.55 * free_bytes))
+        if a.gpu_resident == "yes" and tensor_bytes >= 0.80 * free_bytes:
+            ap.error("--gpu-resident yes would leave too little CUDA memory; "
+                     "use auto/no or lower --max-per-shard")
+    if resident:
         tr = tuple(t.to(dev) for t in tr)
         va = tuple(t.to(dev) for t in va)
+        train_weight = train_weight.to(dev)
     print(f"train {len(tr_idx)} / val {len(val_idx)}; split={split_name}; "
-          f"features={a.features} (data on {dev})")
+          f"features={a.features}; tensors={'GPU-resident' if resident else 'CPU-streamed'} "
+          f"({tensor_bytes / 2**30:.2f} GiB)")
 
     model = TCGNet().to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-4)
@@ -229,11 +294,17 @@ def main():
     stale = 0
     for ep in range(a.epochs):
         model.train()
-        order = torch.randperm(n_tr, device=dev)
+        order = torch.randperm(
+            n_tr, device=dev if resident else torch.device("cpu"))
         tot_p = tot_v = 0.0
         for s in range(steps):
             b = order[s * a.batch:(s + 1) * a.batch]
-            kind, card, scal, mask, ctx, styp, pi, z = (t[b] for t in tr)
+            batch_tensors = tuple(t[b] for t in tr)
+            example_weight = train_weight[b]
+            if not resident:
+                batch_tensors = tuple(t.to(dev) for t in batch_tensors)
+                example_weight = example_weight.to(dev)
+            kind, card, scal, mask, ctx, styp, pi, z = batch_tensors
             logits, v = model(kind, card, scal, mask, ctx, styp)
             if a.dmc:
                 # Q head: the action actually taken is argmax(pi) (exactly the
@@ -245,16 +316,17 @@ def main():
                 lp = ((q_taken - z) ** 2).mean()
             else:
                 per_sample, _option_logits = option_policy_loss(
-                    logits, pi, kind, mask)
+                    logits, pi, kind, mask, a.label_smoothing)
                 if a.critical_weight != 1.0:
                     critical = (ctx[:, None] == critical_ids[None, :]).any(-1)
-                    weight = torch.where(
+                    context_weight = torch.where(
                         critical,
                         torch.full_like(per_sample, a.critical_weight),
                         torch.ones_like(per_sample))
-                    lp = (per_sample * weight).sum() / weight.sum()
+                    weight = context_weight * example_weight
                 else:
-                    lp = per_sample.mean()
+                    weight = example_weight
+                lp = (per_sample * weight).sum() / weight.sum()
             lv = Fn.mse_loss(v, z)
             loss = lp + a.value_weight * lv
             opt.zero_grad()

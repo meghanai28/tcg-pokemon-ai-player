@@ -120,11 +120,25 @@ def _load_net():
     if AGENT_DIR not in sys.path:
         sys.path.insert(0, AGENT_DIR)
     import importlib
+    import importlib.util
     import numpy as np
     feature_module = ("nn_features_rich"
                       if os.path.exists(os.path.join(AGENT_DIR, "nn_features_rich.py"))
                       else "nn_features")
-    nn_features = importlib.import_module(feature_module)
+    # Load the encoder from THIS agent's directory under a directory-unique
+    # module name.  A bare import_module would hand every agent in the process
+    # whichever copy was imported first, so an A/B between two variants that
+    # both ship nn_features_rich.py silently compares one encoder against
+    # itself.  Kaggle runs one agent per process, where this is a no-op.
+    alias = f"{feature_module}__{abs(hash(AGENT_DIR)) & 0xffffffff:08x}"
+    if alias in sys.modules:
+        nn_features = sys.modules[alias]
+    else:
+        spec = importlib.util.spec_from_file_location(
+            alias, os.path.join(AGENT_DIR, feature_module + ".py"))
+        nn_features = importlib.util.module_from_spec(spec)
+        sys.modules[alias] = nn_features
+        spec.loader.exec_module(nn_features)
     from nn_infer import NumpyNet
     net = NumpyNet(path)
 
@@ -538,10 +552,13 @@ def _net_scores(state, me, sel, opts, heur):
         import numpy as _np
         # Rich replay features were ingested in engine order.  Preserve that
         # order here; the base model keeps its historical heuristic truncation.
-        truncation_scores = None if _NF.__name__ == "nn_features_rich" else heur
+        truncation_scores = (None if _NF.__name__.startswith("nn_features_rich")
+                             else heur)
+        feature_state = {"current": state["current"], "select": sel}
+        if getattr(_NF, "DECK_AWARE", False):
+            feature_state["decklist"] = MY_DECK or []
         kind, card, scal, mask, opt_slot = _NF.encode(
-            {"current": state["current"], "select": sel}, me, CARD, ATTACK,
-            truncation_scores)
+            feature_state, me, CARD, ATTACK, truncation_scores)
         pol, _v = _NET.forward(kind[None], card[None], scal[None], mask[None],
                                _np.array([int(sel.get("context") or 0)]),
                                _np.array([int(sel.get("type") or 0)]))

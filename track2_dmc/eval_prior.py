@@ -28,7 +28,8 @@ import model as model_module  # noqa: E402
 from model import TCGNet  # noqa: E402
 
 
-def evaluate(model_path, data, indices, batch, backend, device):
+def evaluate(model_path, data, indices, batch, backend, device,
+             strip_deck=False):
     if backend == "numpy":
         model = NumpyNet(model_path)
     else:
@@ -54,6 +55,13 @@ def evaluate(model_path, data, indices, batch, backend, device):
         mask = data["mask"][ix]
         card = data["card"][ix].astype(np.int64)
         scal = data["scal"][ix]
+        if strip_deck:
+            # Evaluate a pre-deck-conditioning rich checkpoint against the same
+            # temporal holdout without feeding it features it never trained on.
+            card = card.copy()
+            scal = scal.copy()
+            card[:, 0] = 0
+            scal[:, 0, 24:31] = 0
         ctx = data["ctx"][ix].astype(np.int64)
         stype = data["stype"][ix].astype(np.int64)
         if backend == "numpy":
@@ -104,6 +112,8 @@ def main():
     ap.add_argument("--seed", type=int, default=917)
     ap.add_argument("--backend", choices=("torch", "numpy"), default="torch")
     ap.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    ap.add_argument("--strip-deck", action="store_true",
+                    help="zero deck conditioning for legacy rich checkpoints")
     args = ap.parse_args()
 
     device_name = ("cuda" if torch.cuda.is_available() else "cpu") \
@@ -112,15 +122,23 @@ def main():
         ap.error("CUDA requested but unavailable")
     device = torch.device(device_name)
 
-    data = np.load(args.data)
+    # Materialise only the sampled rows, once.  Indexing the NpzFile inside the
+    # batch loop re-decompresses the whole array every batch, which on a
+    # 400k-decision shard means re-inflating ~2.7 GB per batch per model.
     rng = np.random.default_rng(args.seed)
-    n = len(data["pi"])
-    indices = rng.choice(n, size=min(args.limit, n), replace=False)
+    with np.load(args.data) as raw:
+        n = len(raw["pi"])
+        sample = np.sort(rng.choice(n, size=min(args.limit, n), replace=False))
+        data = {k: raw[k][sample] for k in
+                ("kind", "card", "scal", "mask", "ctx", "stype", "pi")}
+    indices = np.arange(len(sample))
     print(f"held-out diagnostics on {len(indices)} decisions "
           f"({args.backend} inference on {device if args.backend == 'torch' else 'cpu'})")
     print(f"{'model':32} {'agree':>8} {'xent':>8} {'entropy':>9} {'spread':>8}")
     for path in args.models:
-        metric = evaluate(path, data, indices, args.batch, args.backend, device)
+        metric = evaluate(
+            path, data, indices, args.batch, args.backend, device,
+            args.strip_deck)
         print(f"{os.path.basename(path):32} "
               f"{100*metric['agreement']:7.2f}% "
               f"{metric['cross_entropy']:8.4f} "

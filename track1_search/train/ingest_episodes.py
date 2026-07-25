@@ -60,7 +60,19 @@ def load_elos(path):
     if not path or not os.path.exists(path):
         return {}
     out = {}
-    with open(path, newline="", encoding="utf-8") as f:
+    if path.lower().endswith(".zip"):
+        archive = zipfile.ZipFile(path)
+        names = [name for name in archive.namelist()
+                 if name.lower().endswith(".csv")]
+        if not names:
+            archive.close()
+            return {}
+        stream = io.TextIOWrapper(archive.open(names[0]), "utf-8")
+    else:
+        archive = None
+        stream = open(path, newline="", encoding="utf-8")
+    try:
+        f = stream
         for row in csv.DictReader(f):
             name = row.get("TeamName") or row.get("teamName")
             score = row.get("Score") or row.get("score")
@@ -69,6 +81,10 @@ def load_elos(path):
                     out[name] = float(score)
                 except ValueError:
                     pass
+    finally:
+        stream.close()
+        if archive is not None:
+            archive.close()
     return out
 
 
@@ -105,12 +121,20 @@ def stable_id(value):
 
 
 def episode_samples(ep, card_db, atk_db, elos, min_elo):
-    """Yield (features..., pi, z, seat, pilot_id) for qualifying decisions."""
+    """Yield features, action target and quality metadata for decisions."""
     steps = ep.get("steps") or []
     rewards = ep.get("rewards") or []
     info = ep.get("info") or {}
     agents = info.get("Agents") or []
     names = [a.get("Name") if isinstance(a, dict) else None for a in agents]
+    decks = [[], []]
+    if len(steps) > 1:
+        for p in range(2):
+            if p < len(steps[1]):
+                action = (steps[1][p] or {}).get("action")
+                if (isinstance(action, list) and len(action) == 60 and
+                        all(isinstance(cid, int) for cid in action)):
+                    decks[p] = action
 
     keep = set()
     for i in range(2):
@@ -146,7 +170,8 @@ def episode_samples(ep, card_db, atk_db, elos, min_elo):
                 continue
             try:
                 kind, card, scal, mask, opt_slot = NF.encode(
-                    {"current": cur, "select": sel}, me, card_db, atk_db, None)
+                    {"current": cur, "select": sel, "decklist": decks[p]},
+                    me, card_db, atk_db, None)
             except Exception:
                 continue
             pi = np.zeros(NF.SEQ, dtype=np.float32)
@@ -158,9 +183,10 @@ def episode_samples(ep, card_db, atk_db, elos, min_elo):
                 continue
             pi /= s
             r = rewards[p] if rewards[p] is not None else 0
+            pilot_name = names[p] if p < len(names) else None
             yield (kind, card, scal, mask, int(sel.get("context") or 0),
                    int(sel.get("type") or 0), pi, float(r), p,
-                   stable_id(names[p] if p < len(names) else None))
+                   stable_id(pilot_name), float(elos.get(pilot_name, min_elo)))
 
 
 def main():
@@ -171,10 +197,15 @@ def main():
     ap.add_argument("--leaderboard", default=None)
     ap.add_argument("--min-elo", type=float, default=0.0)
     ap.add_argument("--max-samples", type=int, default=400000)
+    ap.add_argument("--tag", default=None,
+                    help="optional filename tag so multiple daily shards can "
+                         "share one output directory without overwriting")
     ap.add_argument("--features", choices=("base", "rich"), default="base",
                     help="rich resolves area/index card references and records "
                          "the extra selection fields used by the engine")
     a = ap.parse_args()
+    if a.tag and not all(c.isalnum() or c in "-_" for c in a.tag):
+        ap.error("--tag may contain only letters, digits, '-' and '_'")
 
     if a.features == "rich":
         import nn_features_rich
@@ -187,19 +218,19 @@ def main():
 
     acc = {k: [] for k in (
         "kind", "card", "scal", "mask", "ctx", "stype", "pi", "z",
-        "group", "seat", "pilot")}
+        "group", "seat", "pilot", "elo")}
     n_ep = 0
     for ep, name in iter_episodes(a.episodes):
         n_ep += 1
         group = stable_id(name)
-        for (kind, card, scal, mask, ctx, styp, pi, z, seat, pilot) in episode_samples(
+        for (kind, card, scal, mask, ctx, styp, pi, z, seat, pilot, elo) in episode_samples(
                 ep, card_db, atk_db, elos, a.min_elo):
             acc["kind"].append(kind); acc["card"].append(card)
             acc["scal"].append(scal); acc["mask"].append(mask)
             acc["ctx"].append(ctx); acc["stype"].append(styp)
             acc["pi"].append(pi); acc["z"].append(z)
             acc["group"].append(group); acc["seat"].append(seat)
-            acc["pilot"].append(pilot)
+            acc["pilot"].append(pilot); acc["elo"].append(elo)
         if len(acc["pi"]) >= a.max_samples:
             print("hit --max-samples cap")
             break
@@ -210,7 +241,8 @@ def main():
         raise SystemExit("no samples extracted -- check paths / --min-elo")
 
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, f"bc_{n_ep}eps.npz")
+    prefix = f"bc_{a.tag}_" if a.tag else "bc_"
+    path = os.path.join(a.out, f"{prefix}{n_ep}eps.npz")
     np.savez_compressed(
         path,
         kind=np.array(acc["kind"], dtype=np.int8),
@@ -224,6 +256,7 @@ def main():
         group=np.array(acc["group"], dtype=np.uint64),
         seat=np.array(acc["seat"], dtype=np.int8),
         pilot=np.array(acc["pilot"], dtype=np.uint64),
+        elo=np.array(acc["elo"], dtype=np.float32),
         features=np.array(a.features),
     )
     print(f"wrote {path}: {len(acc['pi'])} samples from {n_ep} episodes")

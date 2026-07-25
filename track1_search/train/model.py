@@ -27,6 +27,7 @@ D_MODEL = 96
 N_LAYERS = 3
 N_HEADS = 4
 D_FF = 192
+DROPOUT = 0.0
 
 
 class Block(nn.Module):
@@ -49,9 +50,11 @@ class Block(nn.Module):
         att = att + attn_mask
         att = att.softmax(-1)
         out = (att @ v).transpose(1, 2).reshape(B, S, D)
-        x = x + self.proj(out)
+        x = x + Fn.dropout(
+            self.proj(out), p=DROPOUT, training=self.training)
         h = self.ln2(x)
-        x = x + self.fc2(Fn.gelu(self.fc1(h), approximate="tanh"))
+        ff = self.fc2(Fn.gelu(self.fc1(h), approximate="tanh"))
+        x = x + Fn.dropout(ff, p=DROPOUT, training=self.training)
         return x
 
 
@@ -73,6 +76,7 @@ class TCGNet(nn.Module):
     def forward(self, kind, card, scal, mask, ctx_id, stype_id):
         """kind/card: [B,S] long; scal: [B,S,F]; mask: [B,S]; ctx/stype: [B]."""
         x = self.card_emb(card) + self.kind_emb(kind) + self.scal_proj(scal)
+        x = Fn.dropout(x, p=DROPOUT, training=self.training)
         g = self.ctx_emb(ctx_id) + self.stype_emb(stype_id)   # [B, D]
         x = torch.cat([x[:, :1, :] + g[:, None, :], x[:, 1:, :]], dim=1)
         x = x * mask[:, :, None]

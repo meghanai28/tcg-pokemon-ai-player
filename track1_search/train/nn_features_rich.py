@@ -12,9 +12,13 @@ share exactly the same base representation.
 """
 from __future__ import annotations
 
+from collections import Counter
+
 import nn_features as _base
 from nn_features import *  # noqa: F401,F403 - re-export the fixed-shape ABI
 
+
+DECK_AWARE = True
 
 DECK = 1
 HAND = 2
@@ -107,6 +111,40 @@ def _card_id(card):
     return card.get("id", 0) if isinstance(card, dict) else 0
 
 
+def _deck_ids(decklist):
+    """Normalise the initial 60-card action (or a list of card dicts)."""
+    out = []
+    for item in decklist or []:
+        cid = item.get("id") if isinstance(item, dict) else item
+        if isinstance(cid, int) and 0 < cid < N_CARD:
+            out.append(cid)
+    return out
+
+
+def _deck_anchor(deck_ids, card_db):
+    """Choose a stable archetype token from the player's known deck.
+
+    The global token previously used card id 0 for every deck.  Prefer a
+    frequently played Pokemon, breaking ties toward evolved/ex Pokemon, so its
+    existing card embedding can cheaply identify the deck's main line.
+    """
+    counts = Counter(deck_ids)
+    pokemon = [
+        (cid, count) for cid, count in counts.items()
+        if card_db.get(cid, {}).get("cardType") == 0
+    ]
+    if not pokemon:
+        return 0
+
+    def rank(item):
+        cid, count = item
+        c = card_db.get(cid, {})
+        return (count, bool(c.get("stage2")), bool(c.get("ex")),
+                bool(c.get("stage1")), c.get("hp") or 0, -cid)
+
+    return max(pokemon, key=rank)[0]
+
+
 def encode(state, me, card_db, attack_db, opt_scores=None):
     kind, card, scal, mask, opt_slot = _base.encode(
         state, me, card_db, attack_db, opt_scores)
@@ -121,6 +159,22 @@ def encode(state, me, card_db, attack_db, opt_scores=None):
     g[21] = _base._clip01(_card_id(sel.get("contextCard")) / float(N_CARD - 1))
     g[22] = _base._clip01(_card_id(sel.get("effect")) / float(N_CARD - 1))
     g[23] = _base._clip01(len(sel.get("deck") or []) / 60.0)
+
+    # Deck conditioning matters in a matchup-heavy TCG: the same visible state
+    # can call for different lines depending on what the policy can draw into.
+    # At inference our own submitted deck is known exactly; replay ingestion
+    # recovers the same list from steps[1][player].action.
+    deck_ids = _deck_ids(state.get("decklist"))
+    if deck_ids:
+        card[0] = _deck_anchor(deck_ids, card_db)
+        type_counts = [0] * 7
+        for cid in deck_ids:
+            card_type = card_db.get(cid, {}).get("cardType")
+            if isinstance(card_type, int) and 0 <= card_type < len(type_counts):
+                type_counts[card_type] += 1
+        denom = float(len(deck_ids))
+        for card_type, count in enumerate(type_counts):
+            g[24 + card_type] = count / denom
 
     # The transformer has no positional embedding.  Expose stable hand/board
     # positions so an option can refer to a specific visible card.
