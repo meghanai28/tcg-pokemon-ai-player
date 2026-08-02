@@ -1,7 +1,8 @@
 # Track 6: controlled deck-specialist arms
 
 Status on 2026-08-02: trained, selected, locally validated, packaged, submitted,
-and accepted by Kaggle. The two final archives are:
+and accepted by Kaggle. After the first downloaded ladder games, Tech-Grim is
+retained and Ogerpon is retired. The historical archives were:
 
 - `submission_grpo_controlled_tech_grim.tar.gz`
 - `submission_grpo_controlled_ogerpon.tar.gz`
@@ -10,6 +11,11 @@ and accepted by Kaggle. The two final archives are:
 |---|---:|---|---:|
 | Tech Grimmsnarl | 55185089 | COMPLETE | 600.0 |
 | Teal Mask Ogerpon | 55185105 | COMPLETE | 600.0 |
+
+Downloaded early records are 9-4 for Tech-Grim and 8-6 for Ogerpon. Tech-Grim
+went 5-1 into Alakazam and showed no runtime problem. Ogerpon lost across
+several unrelated archetypes and its opponent-adjusted public rating remained
+poor, so Track 8 replaces it with Mega Lopunny rather than adding more GRPO.
 
 These are separate ladder hypotheses, not a head-to-head claim. Each arm keeps
 the same proven Track 1 search agent and changes only its exact deck plus the
@@ -152,3 +158,11 @@ Submit:
 Kaggle keeps only the two newest submissions active, so upload both together.
 Do not interpret the initial 600 rating as a result; wait for matchmaking and
 compare them only after both have accumulated a meaningful number of games.
+
+## Ladder disposition
+
+Track 6 is now historical evidence. Tech-Grim advances to the larger-data 192d
+Track 8 run; Ogerpon does not. The old models and exact deck remain versioned so
+the submitted result is reproducible, but generated Ogerpon data/checkpoints
+and its local archive are removed. See `track8_bc800/README.md` for the current
+Mega Lopunny replacement, data boundaries, and promotion gates.

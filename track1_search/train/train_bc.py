@@ -78,8 +78,12 @@ def load_data(data_dirs, max_per_shard=0):
         data_dirs = [data_dirs]
     files = sorted(
         file
-        for data_dir in data_dirs
-        for file in glob.glob(os.path.join(data_dir, "*.npz"))
+        for data_path in data_dirs
+        for file in (
+            [os.fspath(data_path)]
+            if os.path.isfile(data_path) and os.fspath(data_path).endswith(".npz")
+            else glob.glob(os.path.join(data_path, "*.npz"))
+        )
     )
     if not files:
         raise SystemExit(

@@ -19,11 +19,12 @@ def validate_model(path):
         if "_meta" not in model:
             raise ValueError(f"{path} has no _meta architecture")
         meta = tuple(map(int, model["_meta"]))
-        if meta != (160, 5, 5, 320):
+        if meta not in ((160, 5, 5, 320), (192, 6, 6, 384)):
             raise ValueError(f"unexpected architecture {meta} in {path}")
 
 
-def build(name, model_path, deck_path, out_dir):
+def build(name, model_path, deck_path, out_dir,
+          archive_prefix="submission_grpo_"):
     validate_model(model_path)
     deck = [int(line) for line in open(deck_path, encoding="utf-8") if line.strip()]
     if len(deck) != 60:
@@ -46,7 +47,7 @@ def build(name, model_path, deck_path, out_dir):
         if not os.path.isfile(os.path.join(stage, relative)):
             raise FileNotFoundError(f"submission is missing {relative}")
     os.makedirs(out_dir, exist_ok=True)
-    archive = os.path.join(out_dir, f"submission_grpo_{name}.tar.gz")
+    archive = os.path.join(out_dir, f"{archive_prefix}{name}.tar.gz")
     with tarfile.open(archive, "w:gz") as bundle:
         for entry in sorted(os.listdir(stage)):
             bundle.add(os.path.join(stage, entry), arcname=entry)

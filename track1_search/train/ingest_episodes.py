@@ -199,6 +199,10 @@ def main():
     ap.add_argument("--leaderboard", default=None)
     ap.add_argument("--min-elo", type=float, default=0.0)
     ap.add_argument("--max-samples", type=int, default=400000)
+    ap.add_argument(
+        "--sample-mode", choices=("head", "reservoir"), default="head",
+        help="head preserves the historical early-stop behavior; reservoir "
+             "scans every episode and keeps an unbiased bounded sample")
     ap.add_argument("--deck", default=None,
                     help="optional 60-line deck.csv; retain decisions only "
                          "from players using this exact multiset")
@@ -240,22 +244,39 @@ def main():
         "kind", "card", "scal", "mask", "ctx", "stype", "pi", "z",
         "group", "seat", "pilot", "elo")}
     n_ep = 0
+    n_seen = 0
+    sample_rng = np.random.default_rng(917)
     for ep, name in iter_episodes(a.episodes):
         n_ep += 1
         group = stable_id(name)
-        for (kind, card, scal, mask, ctx, styp, pi, z, seat, pilot, elo) in episode_samples(
+        for sample in episode_samples(
                 ep, card_db, atk_db, elos, a.min_elo, target_deck):
-            acc["kind"].append(kind); acc["card"].append(card)
-            acc["scal"].append(scal); acc["mask"].append(mask)
-            acc["ctx"].append(ctx); acc["stype"].append(styp)
-            acc["pi"].append(pi); acc["z"].append(z)
-            acc["group"].append(group); acc["seat"].append(seat)
-            acc["pilot"].append(pilot); acc["elo"].append(elo)
-        if len(acc["pi"]) >= a.max_samples:
+            (kind, card, scal, mask, ctx, styp, pi, z,
+             seat, pilot, elo) = sample
+            values = (kind, card, scal, mask, ctx, styp, pi, z,
+                      group, seat, pilot, elo)
+            n_seen += 1
+            replace = None
+            if (a.sample_mode == "reservoir" and a.max_samples > 0 and
+                    len(acc["pi"]) >= a.max_samples):
+                candidate = int(sample_rng.integers(n_seen))
+                if candidate >= a.max_samples:
+                    continue
+                replace = candidate
+            for key, value in zip(acc, values):
+                if replace is None:
+                    acc[key].append(value)
+                else:
+                    acc[key][replace] = value
+        if (a.sample_mode == "head" and a.max_samples > 0 and
+                len(acc["pi"]) >= a.max_samples):
             print("hit --max-samples cap")
             break
         if n_ep % 50 == 0:
-            print(f"{n_ep} episodes -> {len(acc['pi'])} samples", flush=True)
+            seen_note = (f" ({n_seen} eligible seen)"
+                         if a.sample_mode == "reservoir" else "")
+            print(f"{n_ep} episodes -> {len(acc['pi'])} samples{seen_note}",
+                  flush=True)
 
     if not acc["pi"]:
         raise SystemExit("no samples extracted -- check paths / --min-elo")
@@ -279,7 +300,10 @@ def main():
         elo=np.array(acc["elo"], dtype=np.float32),
         features=np.array(a.features),
     )
-    print(f"wrote {path}: {len(acc['pi'])} samples from {n_ep} episodes")
+    seen_note = (f", reservoir from {n_seen} eligible decisions"
+                 if a.sample_mode == "reservoir" else "")
+    print(f"wrote {path}: {len(acc['pi'])} samples from {n_ep} episodes"
+          f"{seen_note}")
     print(f"train with: py train/train_bc.py --data {a.out}")
 
 

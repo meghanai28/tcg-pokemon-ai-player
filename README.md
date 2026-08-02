@@ -3,15 +3,15 @@
 Agents for the Kaggle competition
 [`pokemon-tcg-ai-battle`](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle).
 
-Six tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
+Seven retained tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
 4 are implemented as self-play RL, Track 3 remains a design, Track 5 is the
-general GRPO refresh, and Track 6 contains the current controlled specialist
-submissions.
+general GRPO refresh, Track 6 records the first controlled specialist
+submissions, and Track 8 is the current larger-data supervised replacement.
 
-> **This README is the project's source of truth and running memory.** The
-> "Track 2 results" section below is the most recent work: a study of RL as
-> search priors, a measured diagnosis of QR-SAC, and corrected replay imitation
-> features (updated 2026-07-23).
+> **This README is the project's source of truth and running memory.** Track 6
+> records the first controlled submissions and their diagnosis; Track 8 holds
+> the current replacement work. The older track sections retain the evidence
+> behind approaches that were accepted or retired.
 
 ```
 track1_search/     determinized search + learned priors
@@ -20,6 +20,7 @@ track3_oracle/     oracle guided hidden info learning
 track4_policygrad/ Delightful Gradient policy gradient
 track5_grpo/       resource-bounded group-relative policy fine tuning
 track6_controlled/ exact-deck BC + conservative GRPO submission arms
+track8_bc800/      192d Tech-Grim + Mega Lopunny supervised refresh
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
@@ -43,8 +44,25 @@ alternating seats and strict RAM/VRAM/wall-time caps. Both 5.0 MiB archives pass
 unit, compilation, engine, deck, and top-level packaging gates. Full data counts,
 research links, commands, checksums, and the important single-pilot limitation
 are in [`track6_controlled/README.md`](track6_controlled/README.md).
-Both entered the ladder at the normal 600.0 seed on 2026-08-02. Do not compare
-that seed with a converged rating; wait for a meaningful game sample.
+Early downloaded results are 9-4 for Tech-Grim and 8-6 for Ogerpon. Tech-Grim
+is retained; Ogerpon is retired because its public rating and cross-archetype
+loss pattern are poor despite the small raw sample.
+
+## Track 8 larger-data replacement
+
+Track 8 trains a shared 192d/6-layer policy on a bounded, balanced mix of
+Elo-800-999 and Elo-1000+ decisions from July 24-30 plus historical high-rated
+anchors (1,204,410 decisions), with 93,468 July 31 decisions held out. It then
+specializes separate models for the retained Tech-Grim list and a Mega
+Lopunny/Dudunsparce list that recorded
+170 games/67% and 125 games/71% in two close variants at Elo 1000+; those exact
+figures remain stable when the census expands to Elo 800+. Uniform reservoir
+ingestion removes archive-order truncation. The completed Tech checkpoint beats
+the current specialist on its exact July 31 holdout (77.82%/0.58082 versus
+76.81%/0.61839 top-1/CE); the Lopunny checkpoint improves its full anchor CE
+from 1.43330 to 1.36321. Both 7.8 MiB archives are packaged but not submitted.
+Commands, research, resource caps, hashes, and gates are in
+[`track8_bc800/README.md`](track8_bc800/README.md).
 
 ### Why the previous rating fell from a provisional 1000+ to ~900
 
@@ -79,7 +97,9 @@ July 31 exact-deck imitation (71.93% versus 65.95% top-1), yet its raw ladder
 win rate did not improve. Offline policy accuracy is therefore a useful safety
 gate, not a strength oracle. Track 6 shifts the higher-leverage variable: two
 current exact decks with observed July 31 win rates of 58% (Tech Grim) and 61%
-(Ogerpon), each with a conservative matching prior. The new replay-aware
+(Ogerpon), each with a conservative matching prior. The later live result
+retained Tech-Grim and retired Ogerpon; Track 8 replaces the latter with a
+larger-data Mega Lopunny arm. The replay-aware
 `tools/autopsy.py` reports Pokemon archetypes correctly, seat splits, repeat
 opponents, time bank, and supports offline re-analysis with `--no-fetch`.
 
