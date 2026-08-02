@@ -120,7 +120,7 @@ def stable_id(value):
     return int.from_bytes(hashlib.blake2b(raw, digest_size=8).digest(), "little")
 
 
-def episode_samples(ep, card_db, atk_db, elos, min_elo):
+def episode_samples(ep, card_db, atk_db, elos, min_elo, target_deck=None):
     """Yield features, action target and quality metadata for decisions."""
     steps = ep.get("steps") or []
     rewards = ep.get("rewards") or []
@@ -138,6 +138,8 @@ def episode_samples(ep, card_db, atk_db, elos, min_elo):
 
     keep = set()
     for i in range(2):
+        if target_deck is not None and tuple(sorted(decks[i])) != target_deck:
+            continue
         if min_elo <= 0:
             keep.add(i)
         else:
@@ -197,6 +199,9 @@ def main():
     ap.add_argument("--leaderboard", default=None)
     ap.add_argument("--min-elo", type=float, default=0.0)
     ap.add_argument("--max-samples", type=int, default=400000)
+    ap.add_argument("--deck", default=None,
+                    help="optional 60-line deck.csv; retain decisions only "
+                         "from players using this exact multiset")
     ap.add_argument("--tag", default=None,
                     help="optional filename tag so multiple daily shards can "
                          "share one output directory without overwriting")
@@ -211,10 +216,25 @@ def main():
         import nn_features_rich
         NF = nn_features_rich
 
+    target_deck = None
+    if a.deck:
+        try:
+            with open(a.deck, encoding="utf-8") as source:
+                target_cards = [
+                    int(line.strip()) for line in source if line.strip()
+                ]
+        except (OSError, ValueError) as exc:
+            ap.error(f"cannot read --deck {a.deck!r}: {exc}")
+        if len(target_cards) != 60:
+            ap.error(f"--deck must contain exactly 60 card IDs, got "
+                     f"{len(target_cards)}")
+        target_deck = tuple(sorted(target_cards))
+
     card_db, atk_db = load_card_db()
     elos = load_elos(a.leaderboard)
     print(f"leaderboard entries: {len(elos)}; min-elo filter: {a.min_elo}; "
-          f"features: {a.features}")
+          f"features: {a.features}; exact-deck filter: "
+          f"{os.path.basename(a.deck) if a.deck else 'none'}")
 
     acc = {k: [] for k in (
         "kind", "card", "scal", "mask", "ctx", "stype", "pi", "z",
@@ -224,7 +244,7 @@ def main():
         n_ep += 1
         group = stable_id(name)
         for (kind, card, scal, mask, ctx, styp, pi, z, seat, pilot, elo) in episode_samples(
-                ep, card_db, atk_db, elos, a.min_elo):
+                ep, card_db, atk_db, elos, a.min_elo, target_deck):
             acc["kind"].append(kind); acc["card"].append(card)
             acc["scal"].append(scal); acc["mask"].append(mask)
             acc["ctx"].append(ctx); acc["stype"].append(styp)

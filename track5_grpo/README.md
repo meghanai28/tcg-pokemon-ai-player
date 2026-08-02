@@ -100,6 +100,11 @@ python track5_grpo/train_grpo.py \
 
 The Garchomp arm changes the deck/output and uses seed 1231.
 
+`--meta-weight-power` and `--meta-schedule-slots` support a deterministic,
+popularity-aware opponent rotation. A power of `0` is uniform; Track 6 uses
+`0.5` over 40 slots, which emphasizes common current decks while retaining at
+least one matched group for every supplied top-20 opponent per cycle.
+
 ## Gates before submission
 
 1. Require at least half of rollout groups to contain both wins and losses. If

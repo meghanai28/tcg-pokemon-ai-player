@@ -47,17 +47,32 @@ def fetch(sub_id, out):
     return ids
 
 
-def archetype(deck, names):
-    """Name a deck by its most distinctive high-id pokemon."""
-    ids = [c for c in deck if c > 100]
-    if not ids:
+def archetype(deck, cards):
+    """Name a deck by its most prominent Pokemon, not a trainer card.
+
+    The old ``cardId > 100`` shortcut could label Teal Mask Ogerpon as
+    ``Bug Catching Set`` and other decks as supporters.  Prefer Pokemon and
+    score repeated evolved/ex cards above one-off support Pokemon.
+    """
+    counts = Counter(deck)
+    pokemon = []
+    for card_id, count in counts.items():
+        card = cards.get(card_id)
+        if not card or card.get("cardType") != 0:
+            continue
+        importance = 1
+        if card.get("stage1"):
+            importance += 1
+        if card.get("stage2"):
+            importance += 2
+        if card.get("ex"):
+            importance += 2
+        if card.get("megaEx"):
+            importance += 3
+        pokemon.append((count * importance, count, card.get("name", str(card_id))))
+    if not pokemon:
         return "unknown"
-    common = Counter(ids).most_common(6)
-    for cid, _n in common:
-        nm = names.get(cid, "")
-        if nm and not nm.startswith("Basic"):
-            return nm
-    return str(common[0][0])
+    return max(pokemon)[2]
 
 
 def main():
@@ -65,24 +80,30 @@ def main():
     ap.add_argument("submission_id")
     ap.add_argument("--out", default="ep_own")
     ap.add_argument("--deck", default=os.path.join(ROOT, "track1_search", "agent", "deck.csv"))
+    ap.add_argument("--no-fetch", action="store_true",
+                    help="analyze replay JSON already in --out without Kaggle access")
     a = ap.parse_args()
 
-    if not os.environ.get("KAGGLE_API_TOKEN"):
-        raise SystemExit("set KAGGLE_API_TOKEN")
-    fetch(a.submission_id, a.out)
+    if not a.no_fetch:
+        if not os.environ.get("KAGGLE_API_TOKEN"):
+            raise SystemExit("set KAGGLE_API_TOKEN or pass --no-fetch")
+        fetch(a.submission_id, a.out)
 
     with open(a.deck) as f:
         my_deck = sorted(int(x) for x in f if x.strip())
 
     try:
         from cg.engine import get_lib
-        names = {c["cardId"]: c["name"]
+        cards = {c["cardId"]: c
                  for c in json.loads(get_lib().AllCard().decode())}
     except Exception:
-        names = {}
+        cards = {}
 
     by_opp = defaultdict(lambda: [0, 0])     # archetype -> [wins, games]
+    by_user = defaultdict(lambda: [0, 0])
+    by_seat = defaultdict(lambda: [0, 0])
     lengths = {"win": [], "loss": []}
+    time_left = {"win": [], "loss": []}
     total = [0, 0]
     for f in glob.glob(os.path.join(a.out, "*.json")):
         try:
@@ -103,13 +124,28 @@ def main():
         rewards = ep.get("rewards") or [0, 0]
         won = rewards[me] == 1
         opp_deck = decks[1 - me] or []
-        arch = archetype(opp_deck, names)
+        arch = archetype(opp_deck, cards)
         b = by_opp[arch]
         b[1] += 1
         b[0] += int(won)
+        seat_bucket = by_seat[me]
+        seat_bucket[1] += 1
+        seat_bucket[0] += int(won)
+        agents = (ep.get("info") or {}).get("Agents") or []
+        if len(agents) == 2:
+            opp_name = agents[1 - me].get("Name") or "unknown"
+            user_bucket = by_user[opp_name]
+            user_bucket[1] += 1
+            user_bucket[0] += int(won)
         total[1] += 1
         total[0] += int(won)
-        (lengths["win"] if won else lengths["loss"]).append(len(steps))
+        outcome = "win" if won else "loss"
+        lengths[outcome].append(len(steps))
+        try:
+            left = steps[-1][me]["observation"]["remainingOverageTime"]
+            time_left[outcome].append(float(left))
+        except (KeyError, IndexError, TypeError, ValueError):
+            pass
 
     if not total[1]:
         raise SystemExit("no episodes matched our decklist")
@@ -118,10 +154,22 @@ def main():
     print(f"{'opponent':>28} {'W':>4} {'games':>6} {'WR':>6}")
     for arch, (w, n) in sorted(by_opp.items(), key=lambda kv: -kv[1][1]):
         print(f"{arch[:28]:>28} {w:>4} {n:>6} {100*w/n:>5.0f}%")
+    print("\nseat record:")
+    for seat_index, (w, n) in sorted(by_seat.items()):
+        print(f"  seat {seat_index}: {w}W {n-w}L = {100*w/n:.0f}%")
+    repeated = [(name, record) for name, record in by_user.items()
+                if record[1] >= 2]
+    if repeated:
+        print("\nrepeat opponents:")
+        for name, (w, n) in sorted(repeated, key=lambda item: -item[1][1]):
+            print(f"  {name[:28]:>28}: {w}W {n-w}L")
     for k in ("win", "loss"):
         if lengths[k]:
             avg = sum(lengths[k]) / len(lengths[k])
-            print(f"\navg steps in {k}s: {avg:.0f}")
+            suffix = ""
+            if time_left[k]:
+                suffix = f", avg bank left {sum(time_left[k])/len(time_left[k]):.0f}s"
+            print(f"\navg steps in {k}s: {avg:.0f}{suffix}")
 
 
 if __name__ == "__main__":

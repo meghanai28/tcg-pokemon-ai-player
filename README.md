@@ -3,8 +3,10 @@
 Agents for the Kaggle competition
 [`pokemon-tcg-ai-battle`](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle).
 
-Four tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
-4 are now implemented as self-play RL (results below); Track 3 remains a design.
+Six tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
+4 are implemented as self-play RL, Track 3 remains a design, Track 5 is the
+general GRPO refresh, and Track 6 contains the current controlled specialist
+submissions.
 
 > **This README is the project's source of truth and running memory.** The
 > "Track 2 results" section below is the most recent work: a study of RL as
@@ -17,11 +19,71 @@ track2_dmc/        Deep Monte Carlo, no search
 track3_oracle/     oracle guided hidden info learning
 track4_policygrad/ Delightful Gradient policy gradient
 track5_grpo/       resource-bounded group-relative policy fine tuning
+track6_controlled/ exact-deck BC + conservative GRPO submission arms
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
 results/           A/B logs and training logs (the evidence)
 ```
+
+## Track 6 controlled specialist submissions (2026-08-02)
+
+Two new arms are trained, checkpoint-selected on untouched July 31 exact-deck
+data, locally validated, and packaged. They share the proven Track 1 search
+code; each has its own exact deck and matching specialized prior model.
+
+| Archive | Deck hypothesis | Selected | Held-out result | Kaggle ref/status |
+|---|---|---:|---:|---:|
+| `submission_grpo_controlled_tech_grim.tar.gz` | Budew/Yveltal Tech Grim | GRPO iter 5 | 76.81%, CE 0.61839 | 55185089, COMPLETE |
+| `submission_grpo_controlled_ogerpon.tar.gz` | pure Teal Mask Ogerpon | GRPO iter 4 | 81.20%, CE 0.69744 | 55185105, COMPLETE |
+
+The July 31 holdout never entered training. GRPO used 320 games per arm against
+the current top 20 exact lists with a square-root-tempered popularity schedule,
+alternating seats and strict RAM/VRAM/wall-time caps. Both 5.0 MiB archives pass
+unit, compilation, engine, deck, and top-level packaging gates. Full data counts,
+research links, commands, checksums, and the important single-pilot limitation
+are in [`track6_controlled/README.md`](track6_controlled/README.md).
+Both entered the ladder at the normal 600.0 seed on 2026-08-02. Do not compare
+that seed with a converged rating; wait for a meaningful game sample.
+
+### Why the previous rating fell from a provisional 1000+ to ~900
+
+Before replacing the active slots, all available public replays were downloaded
+for the retained 967.1 submission and the two refreshed GRPO submissions. The
+old peak was not a stable 1000+ result: Kaggle now reports that submission at
+967.1 after 94 games. The current Grim arm is 918.1 after 63 games, but its raw
+record is nearly the same:
+
+| Submission | Record | Win rate | Wilson 95% interval | Public score |
+|---|---:|---:|---:|---:|
+| old exact Grim + old deck-aware BC | 54-40 | 57.4% | 47.4-67.0% | 967.1 |
+| refreshed exact Grim + GRPO | 35-28 | 55.6% | 43.3-67.2% | 918.1 |
+| refreshed Garchomp + GRPO | 31-27 | 53.4% | 40.8-65.7% | 889.3 |
+
+The old and refreshed Grim intervals overlap almost completely; there is no
+evidence for a 100-rating-point underlying strength collapse. Kaggle ratings
+are opponent-adjusted and provisional runs overshoot. The new submissions had
+only about seven active hours when inspected, versus about 21 hours for the old
+arm, and only the two newest submissions continue receiving games.
+
+There is also no runtime failure hiding in the score. All sampled games reached
+`DONE`, agent logs contain no stderr, decisions run at the intended ~1.1-second
+cap, and even losses retain roughly 508 seconds of time bank on average. The
+meaningful performance warning is matchup-specific: refreshed Grim fell from
+19/28 to 8/15 against Alakazam, while Garchomp managed only 5/13 against
+Alakazam and 5/12 against Grim. Those samples are still small, but Garchomp is
+the weaker hedge and is retired.
+
+Finally, the refreshed Grim prior scores much better than the old 967 model on
+July 31 exact-deck imitation (71.93% versus 65.95% top-1), yet its raw ladder
+win rate did not improve. Offline policy accuracy is therefore a useful safety
+gate, not a strength oracle. Track 6 shifts the higher-leverage variable: two
+current exact decks with observed July 31 win rates of 58% (Tech Grim) and 61%
+(Ogerpon), each with a conservative matching prior. The new replay-aware
+`tools/autopsy.py` reports Pokemon archetypes correctly, seat splits, repeat
+opponents, time bank, and supports offline re-analysis with `--no-fetch`.
+
+---
 
 ## GRPO stage 1 (2026-08-01)
 

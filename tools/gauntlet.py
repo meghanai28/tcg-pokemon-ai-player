@@ -67,6 +67,9 @@ def main():
     ap.add_argument("--same-deck", action="store_true",
                     help="head-to-head pilot A/B on the candidate's deck "
                          "instead of a weighted field gauntlet")
+    ap.add_argument("--opponent-meta", default=None,
+                    help="optional Python file defining current META_DECKS and "
+                         "META_WEIGHT for field evaluation")
     a = ap.parse_args()
 
     me = load(a.agent, "gauntlet_me")
@@ -77,8 +80,16 @@ def main():
     my_deck = me._load_deck()
 
     # weights = appearance counts from the mining run
-    decks = dict(me.META_DECKS)
-    weights = dict(getattr(me, "META_WEIGHT", {}) or {})
+    meta = me
+    if a.opponent_meta:
+        spec = importlib.util.spec_from_file_location(
+            "gauntlet_current_meta", os.path.abspath(a.opponent_meta))
+        if spec is None or spec.loader is None:
+            raise ValueError(f"cannot import {a.opponent_meta}")
+        meta = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(meta)
+    decks = dict(meta.META_DECKS)
+    weights = dict(getattr(meta, "META_WEIGHT", {}) or {})
     total_w = sum(weights.get(k, 1) for k in decks) or 1
 
     from kaggle_environments import make

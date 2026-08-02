@@ -12,6 +12,7 @@ models used as search priors reached 967.1.
 from __future__ import annotations
 
 import argparse
+import bisect
 import copy
 import importlib.util
 import json
@@ -135,6 +136,31 @@ def group_advantages(rewards):
     if std < 1e-6:
         return np.zeros_like(values)
     return (values - values.mean()) / (std + 1e-6)
+
+
+def weighted_opponent_schedule(opponents, weights, slots=40, power=0.5):
+    """Deterministic popularity-tempered opponent cycle.
+
+    Raw replay popularity is too concentrated to use directly (one exact list
+    can occupy roughly half the field), while a uniform top-N schedule badly
+    underweights that matchup. Square-root weighting is the middle ground.
+    """
+    if not opponents:
+        raise ValueError("opponent schedule cannot be empty")
+    if slots < len(opponents):
+        slots = len(opponents)
+    if power <= 0:
+        return list(opponents)
+    mass = [max(float(weights.get(name, 1)), 1.0) ** power
+            for name, _deck in opponents]
+    cumulative = np.cumsum(mass).tolist()
+    total = cumulative[-1]
+    schedule = []
+    for slot in range(slots):
+        point = (slot + 0.5) * total / slots
+        schedule.append(opponents[min(
+            bisect.bisect_left(cumulative, point), len(opponents) - 1)])
+    return schedule
 
 
 def encode(M, obs, me, deck):
@@ -335,6 +361,10 @@ def main():
     ap.add_argument("--kl-beta", type=float, default=0.04)
     ap.add_argument("--entropy-beta", type=float, default=0.002)
     ap.add_argument("--temperature", type=float, default=1.05)
+    ap.add_argument("--meta-weight-power", type=float, default=0.5,
+                    help="temper replay popularity in the opponent schedule; "
+                         "0 selects each exact list uniformly")
+    ap.add_argument("--meta-schedule-slots", type=int, default=40)
     ap.add_argument("--threads", type=int, default=6)
     ap.add_argument("--max-wall-minutes", type=float, default=120.0)
     ap.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
@@ -347,6 +377,10 @@ def main():
         ap.error("--groups must be in [1, 32]")
     if args.threads < 1 or args.threads > 10:
         ap.error("--threads must be in [1, 10]")
+    if args.meta_weight_power < 0 or args.meta_weight_power > 1:
+        ap.error("--meta-weight-power must be in [0, 1]")
+    if args.meta_schedule_slots < 1 or args.meta_schedule_slots > 400:
+        ap.error("--meta-schedule-slots must be in [1, 400]")
     if args.device == "cuda" and not torch.cuda.is_available():
         ap.error("CUDA was requested but torch cannot access it")
     resource_guard(args.max_decisions, args.out)
@@ -370,6 +404,7 @@ def main():
     # Include the two current deck recommendations even if an older main.py
     # does not yet contain them in its mined archetype library.
     opponent_decks = list(M.META_DECKS.items())
+    opponent_weights = dict(getattr(M, "META_WEIGHT", {}) or {})
     if args.opponent_meta:
         spec = importlib.util.spec_from_file_location(
             "grpo_opponent_meta", args.opponent_meta)
@@ -381,6 +416,7 @@ def main():
         if not isinstance(candidates, dict) or not candidates:
             ap.error("--opponent-meta must define a non-empty META_DECKS dict")
         opponent_decks = []
+        opponent_weights = dict(getattr(meta_module, "META_WEIGHT", {}) or {})
         for name, deck in candidates.items():
             if (not isinstance(deck, list) or len(deck) != 60 or
                     not all(isinstance(card, int) for card in deck)):
@@ -390,10 +426,17 @@ def main():
         deck = read_deck(os.path.join(HERE, "decks", name + ".csv"))
         if tuple(deck) not in {tuple(x[1]) for x in opponent_decks}:
             opponent_decks.append((name, deck))
+            opponent_weights[name] = 1
+    unique_opponents = len(opponent_decks)
+    opponent_decks = weighted_opponent_schedule(
+        opponent_decks, opponent_weights, args.meta_schedule_slots,
+        args.meta_weight_power)
 
     print(f"device={device}; rollout=cpu; torch_threads={args.threads}; "
           f"RAM decision cap={args.max_decisions}; model={configure_model_from_npz(args.init)}")
-    print(f"deck={os.path.basename(args.deck)}; opponents={len(opponent_decks)}; "
+    print(f"deck={os.path.basename(args.deck)}; opponents={unique_opponents}; "
+          f"schedule_slots={len(opponent_decks)}; "
+          f"meta_weight_power={args.meta_weight_power}; "
           f"games/iter<={args.groups * args.group_size}")
 
     started = time.monotonic()
