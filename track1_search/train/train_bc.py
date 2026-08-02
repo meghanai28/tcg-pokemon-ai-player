@@ -73,10 +73,17 @@ def eval_val(model, va, dev, batch=512):
     return ce / n, vmse / n, t1 / n, vmae / n
 
 
-def load_data(data_dir, max_per_shard=0):
-    files = sorted(glob.glob(os.path.join(data_dir, "*.npz")))
+def load_data(data_dirs, max_per_shard=0):
+    if isinstance(data_dirs, (str, os.PathLike)):
+        data_dirs = [data_dirs]
+    files = sorted(
+        file
+        for data_dir in data_dirs
+        for file in glob.glob(os.path.join(data_dir, "*.npz"))
+    )
     if not files:
-        raise SystemExit(f"no shards in {data_dir} -- run train/selfplay.py first")
+        raise SystemExit(
+            f"no shards in {list(data_dirs)} -- run train/selfplay.py first")
     required = ("kind", "card", "scal", "mask", "ctx", "stype", "pi", "z")
     optional = ("group", "pilot", "seat", "elo")
     parts = {k: [] for k in required}
@@ -109,7 +116,8 @@ def load_data(data_dir, max_per_shard=0):
 def main():
     global NF
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", default=os.path.join(HERE, "data"))
+    ap.add_argument("--data", nargs="+", default=[os.path.join(HERE, "data")],
+                    help="one or more training-shard directories")
     ap.add_argument("--val-data", default=None,
                     help="optional separate held-out shard directory")
     ap.add_argument("--epochs", type=int, default=12)
@@ -121,6 +129,9 @@ def main():
     ap.add_argument("--split", choices=("auto", "decision", "episode", "pilot"),
                     default="auto", help="auto uses episode groups when present")
     ap.add_argument("--out", default=os.path.join(HERE, "model_bc.npz"))
+    ap.add_argument("--init", default=None,
+                    help="optional exported .npz checkpoint to warm-start; its "
+                         "architecture must match --dim/--layers/--heads")
     ap.add_argument("--dim", type=int, default=96, help="model width")
     ap.add_argument("--layers", type=int, default=3)
     ap.add_argument("--heads", type=int, default=4)
@@ -166,6 +177,9 @@ def main():
         ap.error("--device cuda requested but CUDA is unavailable")
     dev = torch.device("cuda" if (a.device != "cpu" and torch.cuda.is_available())
                        else "cpu")
+    if dev.type == "cuda":
+        # Leave headroom for WSL, the display stack, and allocator variance.
+        torch.cuda.set_per_process_memory_fraction(0.75)
     print(f"device: {dev}")
     import model as _m
     if a.features == "rich":
@@ -280,7 +294,30 @@ def main():
           f"features={a.features}; tensors={'GPU-resident' if resident else 'CPU-streamed'} "
           f"({tensor_bytes / 2**30:.2f} GiB)")
 
-    model = TCGNet().to(dev)
+    model = TCGNet()
+    if a.init:
+        with np.load(a.init) as weights:
+            expected_meta = np.array(
+                [a.dim, a.layers, a.heads, 2 * a.dim], dtype=np.int64)
+            if "_meta" not in weights or not np.array_equal(
+                    weights["_meta"], expected_meta):
+                got = weights["_meta"].tolist() if "_meta" in weights else None
+                ap.error(f"--init architecture {got} does not match "
+                         f"{expected_meta.tolist()}")
+            state = model.state_dict()
+            missing = [
+                key for key, value in state.items()
+                if key not in weights or
+                tuple(weights[key].shape) != tuple(value.shape)
+            ]
+            if missing:
+                ap.error(f"--init has missing or mismatched weights: {missing[:5]}")
+            model.load_state_dict({
+                key: torch.as_tensor(weights[key]).to(dtype=value.dtype)
+                for key, value in state.items()
+            })
+        print(f"warm-started model from {a.init}")
+    model = model.to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-4)
     n_tr = len(tr_idx)
     steps = max(1, n_tr // a.batch)

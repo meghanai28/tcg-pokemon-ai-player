@@ -16,11 +16,71 @@ track1_search/     determinized search + learned priors
 track2_dmc/        Deep Monte Carlo, no search
 track3_oracle/     oracle guided hidden info learning
 track4_policygrad/ Delightful Gradient policy gradient
+track5_grpo/       resource-bounded group-relative policy fine tuning
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
 results/           A/B logs and training logs (the evidence)
 ```
+
+## GRPO stage 1 (2026-08-01)
+
+Track 5 now implements value-free, clipped GRPO on matched groups of full games.
+It warm-starts from the proven 160d/5L deck-aware rich-BC model, standardizes
+terminal rewards within deck/opponent/seat groups, keeps an exact legal-option
+KL anchor to the reference policy, and exports the actor for Track 1 root priors.
+The resource guards were sized on WSL with 23 GiB RAM, 14 logical CPUs, and an
+RTX 5080 with 16 GiB VRAM: rollouts stay on CPU, training uses at most 75% of
+VRAM, stored decisions and thread count are capped, and every iteration is
+checkpointed.
+
+Two deliberately different deck arms completed a bounded 48-game stage and
+passed local engine/package checks plus Kaggle self-play validation:
+
+| Submission | Role | Held-out top-1 | Reported KL | Kaggle ref |
+|---|---|---:|---:|---:|
+| GRPO Grimmsnarl/Froslass/Munkidori | stable primary; recovered 967.1 deck | 72.44% | 0.00153 | 55170717 |
+| GRPO Cynthia's Garchomp | anti-Grimmsnarl meta hedge | 72.18% | 0.00159 | 55170724 |
+| untouched rich-BC checkpoint | reference | 72.12% | 0 | 54967265 (967.1) |
+
+Both new agents entered the ladder at the normal 600.0 seed. These are stage-1
+experiments, not evidence of a 1000+ agent yet. Do not read their early rating as
+converged. The next gate is matchup-stratified evaluation and additional GRPO
+only if at least half of groups retain reward variance; see
+`track5_grpo/README.md`.
+
+The exact recovered difference in submissions 54989905/54989908 was an
+opponent-deck posterior sampled independently per determinized world. It lowered
+the 967.1 baseline to roughly 915-922 despite a positive local gauntlet, so it is
+intentionally excluded from Track 5.
+
+### Updated-data stage (2026-08-01)
+
+The stage-1 checkpoint was correctly challenged for stale data. Official daily
+exports for July 24-30 processed 9,636 episodes and added 1.12M
+Elo-1000+-filtered rich decisions;
+July 31 is isolated as a 1,242-episode temporal holdout. A balanced warm-start
+run used 825,000 decisions across eleven dates, early-stopped at epoch 17, and
+restored epoch 13:
+
+| Model | July 31 top-1 | July 31 CE |
+|---|---:|---:|
+| old 967-era BC | 67.14% | 0.9304 |
+| refreshed BC | **72.82%** | **0.7595** |
+
+The July 31 Elo-1000+ census contains 7,475 deck appearances. Exact Grimmsnarl
+is 49.6% of them and the chosen Garchomp list is the fourth-most common exact
+list with a 54% observed win rate. Each deck then received 400 matched GRPO
+games against the top 20 current exact lists. Grimmsnarl had 78/100 active
+groups and Garchomp 57/100. Replay gates selected Grim iteration 4 (73.00%,
+KL 0.00157) and Garchomp iteration 8 (72.95%, KL 0.00260), rejecting later
+drift. Kaggle self-play validation completed successfully for both final
+submissions:
+
+| Submission | Selected checkpoint | Kaggle ref | Status |
+|---|---:|---:|---|
+| refreshed GRPO Grimmsnarl | iteration 4 | 55177242 | COMPLETE (initial 600.0) |
+| refreshed GRPO Garchomp | iteration 8 | 55177256 | COMPLETE (initial 600.0) |
 
 ---
 

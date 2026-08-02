@@ -1,0 +1,1255 @@
+{
+  "config": {
+    "init": "/home/meghana/tcg-pokemon-ai-player/track5_grpo/model_bc_recent.npz",
+    "deck": "/home/meghana/tcg-pokemon-ai-player/track5_grpo/decks/grimmsnarl.csv",
+    "opponent_meta": "/home/meghana/tcg-pokemon-ai-player/track5_grpo/meta_decks_0731_top.py",
+    "out": "/home/meghana/tcg-pokemon-ai-player/track5_grpo/model_grpo_recent_grimmsnarl.npz",
+    "iters": 10,
+    "groups": 10,
+    "group_size": 4,
+    "max_decisions": 15000,
+    "epochs": 3,
+    "batch": 128,
+    "lr": 3e-06,
+    "clip": 0.12,
+    "kl_beta": 0.06,
+    "entropy_beta": 0.001,
+    "temperature": 1.05,
+    "threads": 6,
+    "max_wall_minutes": 180.0,
+    "device": "cuda",
+    "seed": 917
+  },
+  "history": [
+    {
+      "iteration": 1,
+      "decisions": 3118,
+      "trained_decisions": 1669,
+      "active_groups": 5,
+      "optimizer_steps": 42,
+      "loss": -0.07092517730225587,
+      "kl": 8.932160578264561e-05,
+      "entropy": 0.6888922722566695,
+      "ratio": 0.9991706070445833,
+      "groups": [
+        {
+          "opponent": "mined_0",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_1",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_2",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_3",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_4",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_5",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_6",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_7",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_8",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_9",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "decisions": 3720,
+      "trained_decisions": 3392,
+      "active_groups": 9,
+      "optimizer_steps": 81,
+      "loss": -0.07961346864999261,
+      "kl": 0.0004718780155037817,
+      "entropy": 0.6888590182787107,
+      "ratio": 1.0000089804331462,
+      "groups": [
+        {
+          "opponent": "mined_10",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_11",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_12",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_13",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_14",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_15",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_16",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_17",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_18",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_19",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "decisions": 3097,
+      "trained_decisions": 2198,
+      "active_groups": 7,
+      "optimizer_steps": 54,
+      "loss": -0.034610479759673275,
+      "kl": 0.0011245137720834464,
+      "entropy": 0.6779400938087039,
+      "ratio": 0.9996484451823764,
+      "groups": [
+        {
+          "opponent": "mined_0",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_1",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_2",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_3",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_4",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_5",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_6",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_7",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_8",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_9",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "decisions": 3231,
+      "trained_decisions": 2937,
+      "active_groups": 9,
+      "optimizer_steps": 69,
+      "loss": -0.11391093199937671,
+      "kl": 0.0015734344116830523,
+      "entropy": 0.6767018031382906,
+      "ratio": 1.0007489358169446,
+      "groups": [
+        {
+          "opponent": "mined_10",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_11",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_12",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_13",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_14",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_15",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_16",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_17",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_18",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_19",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "decisions": 3116,
+      "trained_decisions": 2006,
+      "active_groups": 7,
+      "optimizer_steps": 48,
+      "loss": -0.10346617450704798,
+      "kl": 0.0018034824849261593,
+      "entropy": 0.6766009877125422,
+      "ratio": 0.9998374581336975,
+      "groups": [
+        {
+          "opponent": "mined_0",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_1",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_2",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_3",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_4",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_5",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_6",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_7",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_8",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_9",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 6,
+      "decisions": 3437,
+      "trained_decisions": 3134,
+      "active_groups": 9,
+      "optimizer_steps": 75,
+      "loss": -0.01701669513868789,
+      "kl": 0.001961297184849779,
+      "entropy": 0.6696629579861959,
+      "ratio": 0.9999227682749431,
+      "groups": [
+        {
+          "opponent": "mined_10",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_11",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_12",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_13",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_14",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_15",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_16",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_17",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_18",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_19",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        }
+      ]
+    },
+    {
+      "iteration": 7,
+      "decisions": 3331,
+      "trained_decisions": 2975,
+      "active_groups": 9,
+      "optimizer_steps": 72,
+      "loss": -0.08662989090872644,
+      "kl": 0.002259507424443857,
+      "entropy": 0.6743404294053713,
+      "ratio": 1.00034289724297,
+      "groups": [
+        {
+          "opponent": "mined_0",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_1",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_2",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_3",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_4",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_5",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_6",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_7",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_8",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_9",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 8,
+      "decisions": 3829,
+      "trained_decisions": 3110,
+      "active_groups": 8,
+      "optimizer_steps": 75,
+      "loss": 0.003949296583111088,
+      "kl": 0.002403739724929134,
+      "entropy": 0.6898416185379028,
+      "ratio": 0.9995705270767212,
+      "groups": [
+        {
+          "opponent": "mined_10",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_11",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_12",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_13",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_14",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_15",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_16",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_17",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_18",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_19",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 9,
+      "decisions": 3325,
+      "trained_decisions": 2364,
+      "active_groups": 7,
+      "optimizer_steps": 57,
+      "loss": -0.06587907738918275,
+      "kl": 0.0026687483585096502,
+      "entropy": 0.6761746657522101,
+      "ratio": 1.0003459181701928,
+      "groups": [
+        {
+          "opponent": "mined_0",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_1",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_2",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_3",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_4",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_5",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_6",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_7",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_8",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_9",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "iteration": 10,
+      "decisions": 3568,
+      "trained_decisions": 2857,
+      "active_groups": 8,
+      "optimizer_steps": 69,
+      "loss": -0.012515503683707851,
+      "kl": 0.0030196222503656063,
+      "entropy": 0.6774393678575322,
+      "ratio": 0.9996696192285289,
+      "groups": [
+        {
+          "opponent": "mined_10",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_11",
+          "seat": 1,
+          "rewards": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_12",
+          "seat": 0,
+          "rewards": [
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": false
+        },
+        {
+          "opponent": "mined_13",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_14",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_15",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_16",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_17",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_18",
+          "seat": 0,
+          "rewards": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "active": true
+        },
+        {
+          "opponent": "mined_19",
+          "seat": 1,
+          "rewards": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "active": true
+        }
+      ]
+    }
+  ]
+}

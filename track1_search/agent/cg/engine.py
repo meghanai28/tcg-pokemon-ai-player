@@ -24,31 +24,14 @@ def lib_path():
     return os.path.join(_DIR, "libcg.so")
 
 
-def get_lib():
-    """Return the initialized engine handle.
+def _configure(lib):
+    """Declare the agent/search ABI even when the SDK's sim shim is minimal.
 
-    Prefers the official cg.sim module (which already loads the library, calls
-    GameInitialize once, and sets every argtype). Falls back to loading it
-    ourselves if sim.py is unavailable. GameInitialize is NOT idempotent -- a
-    second call on the same loaded library raises -- so routing everything
-    through this one function is what keeps a process from double-initializing.
+    Recent kaggle-environments releases configure only the live-battle calls
+    in ``cg.sim``.  Without these declarations ctypes treats ``AllCard`` as an
+    integer-returning function and local search/training fails before game 1.
+    Re-declaring an existing ctypes signature is harmless.
     """
-    global _lib
-    if _lib is not None:
-        return _lib
-    try:
-        from .sim import lib as _simlib       # official bindings, already inited
-        _lib = _simlib
-        return _lib
-    except Exception:
-        pass
-    lib = ctypes.cdll.LoadLibrary(lib_path())
-    try:
-        lib.GameInitialize()
-    except OSError:
-        # the same library instance was already initialized in this process
-        pass
-
     lib.AllCard.restype = ctypes.c_char_p
     lib.AllCard.argtypes = []
     lib.AllAttack.restype = ctypes.c_char_p
@@ -65,6 +48,33 @@ def get_lib():
     lib.SearchEnd.argtypes = [ctypes.c_void_p]
     lib.SearchRelease.restype = None
     lib.SearchRelease.argtypes = [ctypes.c_void_p, ctypes.c_longlong]
+    return lib
 
-    _lib = lib
+
+def get_lib():
+    """Return the initialized engine handle.
+
+    Prefers the official cg.sim module (which already loads the library, calls
+    GameInitialize once, and sets every argtype). Falls back to loading it
+    ourselves if sim.py is unavailable. GameInitialize is NOT idempotent -- a
+    second call on the same loaded library raises -- so routing everything
+    through this one function is what keeps a process from double-initializing.
+    """
+    global _lib
+    if _lib is not None:
+        return _lib
+    try:
+        from .sim import lib as _simlib       # official bindings, already inited
+        _lib = _configure(_simlib)
+        return _lib
+    except Exception:
+        pass
+    lib = ctypes.cdll.LoadLibrary(lib_path())
+    try:
+        lib.GameInitialize()
+    except OSError:
+        # the same library instance was already initialized in this process
+        pass
+
+    _lib = _configure(lib)
     return _lib

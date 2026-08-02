@@ -64,6 +64,9 @@ def main():
     ap.add_argument("agent")
     ap.add_argument("games", nargs="?", type=int, default=32)
     ap.add_argument("--opponent-agent", default=None)
+    ap.add_argument("--same-deck", action="store_true",
+                    help="head-to-head pilot A/B on the candidate's deck "
+                         "instead of a weighted field gauntlet")
     a = ap.parse_args()
 
     me = load(a.agent, "gauntlet_me")
@@ -80,11 +83,16 @@ def main():
 
     from kaggle_environments import make
 
-    plan = []
-    for name, deck in decks.items():
-        n = max(2, round(a.games * weights.get(name, 1) / total_w))
-        plan.append((name, deck, n))
-    print(f"gauntlet: {sum(n for _, _, n in plan)} games over {len(plan)} field decks\n")
+    if a.same_deck:
+        plan = [("same_deck", my_deck, a.games)]
+        print(f"same-deck pilot A/B: {a.games} games, alternating seats\n")
+    else:
+        plan = []
+        for name, deck in decks.items():
+            n = max(2, round(a.games * weights.get(name, 1) / total_w))
+            plan.append((name, deck, n))
+        print(f"gauntlet: {sum(n for _, _, n in plan)} games over "
+              f"{len(plan)} field decks\n")
 
     results = {}
     tot_w = tot_n = 0

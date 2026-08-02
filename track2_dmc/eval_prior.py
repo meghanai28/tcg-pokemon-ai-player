@@ -109,12 +109,17 @@ def main():
         ROOT, "track1_search", "train", "data_bc", "bc_917eps.npz"))
     ap.add_argument("--limit", type=int, default=5053)
     ap.add_argument("--batch", type=int, default=256)
+    ap.add_argument("--threads", type=int, default=6,
+                    help="Torch CPU thread cap (ignored by NumPy backend)")
     ap.add_argument("--seed", type=int, default=917)
     ap.add_argument("--backend", choices=("torch", "numpy"), default="torch")
     ap.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     ap.add_argument("--strip-deck", action="store_true",
                     help="zero deck conditioning for legacy rich checkpoints")
     args = ap.parse_args()
+    if args.threads < 1 or args.threads > 10:
+        ap.error("--threads must be in [1, 10]")
+    torch.set_num_threads(args.threads)
 
     device_name = ("cuda" if torch.cuda.is_available() else "cpu") \
         if args.device == "auto" else args.device
