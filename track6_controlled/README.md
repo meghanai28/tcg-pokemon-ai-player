@@ -9,13 +9,14 @@ retained and Ogerpon is retired. The historical archives were:
 
 | Arm | Kaggle ref | Status at submission | Initial score |
 |---|---:|---|---:|
-| Tech Grimmsnarl | 55185089 | COMPLETE | 600.0 |
-| Teal Mask Ogerpon | 55185105 | COMPLETE | 600.0 |
+| Tech Grimmsnarl | 55185089 | COMPLETE | 972.0 |
+| Teal Mask Ogerpon | 55185105 | COMPLETE | 719.2 |
 
 Downloaded early records are 9-4 for Tech-Grim and 8-6 for Ogerpon. Tech-Grim
 went 5-1 into Alakazam and showed no runtime problem. Ogerpon lost across
 several unrelated archetypes and its opponent-adjusted public rating remained
-poor, so Track 8 replaces it with Mega Lopunny rather than adding more GRPO.
+poor. Track 8 tested Mega Lopunny as a replacement, but that experiment is now
+retired too.
 
 These are separate ladder hypotheses, not a head-to-head claim. Each arm keeps
 the same proven Track 1 search agent and changes only its exact deck plus the
@@ -161,8 +162,9 @@ compare them only after both have accumulated a meaningful number of games.
 
 ## Ladder disposition
 
-Track 6 is now historical evidence. Tech-Grim advances to the larger-data 192d
-Track 8 run; Ogerpon does not. The old models and exact deck remain versioned so
-the submitted result is reproducible, but generated Ogerpon data/checkpoints
-and its local archive are removed. See `track8_bc800/README.md` for the current
-Mega Lopunny replacement, data boundaries, and promotion gates.
+Track 6 Tech-Grim is the current control and best live candidate. Its attempted
+larger-data 192d Track 8 successor failed the live gate at 855.3; Ogerpon and
+the Track 8 Lopunny hedge are retired. The old models and exact deck remain
+versioned so the submitted result is reproducible, while generated Ogerpon
+data/checkpoints and its local archive are removed. See `CURRENT_STATE.md` for
+the current algorithm decision and next controlled experiment.

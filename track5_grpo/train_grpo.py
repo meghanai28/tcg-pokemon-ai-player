@@ -349,6 +349,9 @@ def main():
     ap.add_argument("--opponent-meta", default=None,
                     help="optional Python file emitted by tools/mine_decks.py; "
                          "used for rollouts only, never copied into submission")
+    ap.add_argument("--no-default-opponents", action="store_true",
+                    help="with --opponent-meta, do not append the historical "
+                         "Grimmsnarl and Garchomp decks")
     ap.add_argument("--out", default=os.path.join(HERE, "model_grpo.npz"))
     ap.add_argument("--iters", type=int, default=3)
     ap.add_argument("--groups", type=int, default=4)
@@ -422,11 +425,12 @@ def main():
                     not all(isinstance(card, int) for card in deck)):
                 ap.error(f"--opponent-meta deck {name!r} is not 60 integer IDs")
             opponent_decks.append((str(name), deck))
-    for name in ("grimmsnarl", "garchomp"):
-        deck = read_deck(os.path.join(HERE, "decks", name + ".csv"))
-        if tuple(deck) not in {tuple(x[1]) for x in opponent_decks}:
-            opponent_decks.append((name, deck))
-            opponent_weights[name] = 1
+    if not args.no_default_opponents:
+        for name in ("grimmsnarl", "garchomp"):
+            deck = read_deck(os.path.join(HERE, "decks", name + ".csv"))
+            if tuple(deck) not in {tuple(x[1]) for x in opponent_decks}:
+                opponent_decks.append((name, deck))
+                opponent_weights[name] = 1
     unique_opponents = len(opponent_decks)
     opponent_decks = weighted_opponent_schedule(
         opponent_decks, opponent_weights, args.meta_schedule_slots,

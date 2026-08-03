@@ -1,7 +1,10 @@
 # Track 8: larger-data 192d specialist replacements
 
-Status on 2026-08-02: trained, temporally validated, official-engine smoke
-tested from both seats, and packaged. Neither archive has been submitted yet.
+Status on 2026-08-02: live promotion failed and both 192d arms are retired.
+Tech-Grim completed as Kaggle ref `55195501` at 848.9 despite a 30-20 raw
+record. Kaggle reported zero daily submissions remaining; the attempted
+Lopunny upload returned HTTP 400 and created no submission. Data ingestion and
+reservoir tooling remain useful, but neither archive is a recommended slot.
 
 This track replaces the retired Ogerpon and recovery directions with two
 supervised search-prior arms: a stronger Tech-Grim model and a deliberately
@@ -135,6 +138,12 @@ Package after the gates pass:
 |---|---|---:|---|
 | `submission_bc800_tech_grim_192.tar.gz` | Tech-Grim | 7.8 MiB | `ab74a7add2cfab1fe7c353193c69d38f7b925373c83e027ebed849291a6f9643` |
 | `submission_bc800_lopunny_192.tar.gz` | Mega Lopunny/Dudunsparce | 7.8 MiB | `c39328a35a062f5e82eb6fca9c77f02e12ad6b3b5ababfdab39b93fbeb412c1d` |
+
+Submission state:
+
+- Tech-Grim: ref `55195501`, `COMPLETE`, score 848.9, record 30-20; retired.
+- Mega Lopunny: locally ready but retired; not submitted because the daily
+  quota was zero.
 
 Both archives have the required top-level layout, 60-card decks, the expected
 `(192, 6, 6, 384)` model metadata, and completed two official-environment

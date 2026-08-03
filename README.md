@@ -5,13 +5,18 @@ Agents for the Kaggle competition
 
 Seven retained tracks, in order of maturity. Track 1 is the live ladder agent. Tracks 2 and
 4 are implemented as self-play RL, Track 3 remains a design, Track 5 is the
-general GRPO refresh, Track 6 records the first controlled specialist
-submissions, and Track 8 is the current larger-data supervised replacement.
+general GRPO refresh, Track 6 records the controlled specialist submissions,
+and Track 8 records the failed larger-data supervised experiment.
 
-> **This README is the project's source of truth and running memory.** Track 6
-> records the first controlled submissions and their diagnosis; Track 8 holds
-> the current replacement work. The older track sections retain the evidence
-> behind approaches that were accepted or retired.
+> **This README is the project's historical record.** Track 6 records the
+> controlled submissions and their diagnosis; Track 8 records a failed live
+> promotion. The older sections retain evidence behind accepted and retired
+> approaches.
+
+> **Current recommendation:** read [`CURRENT_STATE.md`](CURRENT_STATE.md) first.
+> Track 8 failed its live gate at 848.9 despite a 30-20 raw record. Track 9 now
+> pairs the unchanged Track 6 control with a bounded weighted-BC plus GRPO
+> challenger. Control ref 55202336 and challenger ref 55202342 are pending.
 
 ```
 track1_search/     determinized search + learned priors
@@ -20,7 +25,8 @@ track3_oracle/     oracle guided hidden info learning
 track4_policygrad/ Delightful Gradient policy gradient
 track5_grpo/       resource-bounded group-relative policy fine tuning
 track6_controlled/ exact-deck BC + conservative GRPO submission arms
-track8_bc800/      192d Tech-Grim + Mega Lopunny supervised refresh
+track8_bc800/      retired 192d Tech-Grim + Mega Lopunny experiment
+track9_awr_grpo/    exact-Tech weighted BC + targeted conservative GRPO
 
 tools/             evaluation, mining, autopsy (shared)
 data/              replays, leaderboard, official SDK
@@ -35,8 +41,8 @@ code; each has its own exact deck and matching specialized prior model.
 
 | Archive | Deck hypothesis | Selected | Held-out result | Kaggle ref/status |
 |---|---|---:|---:|---:|
-| `submission_grpo_controlled_tech_grim.tar.gz` | Budew/Yveltal Tech Grim | GRPO iter 5 | 76.81%, CE 0.61839 | 55185089, COMPLETE |
-| `submission_grpo_controlled_ogerpon.tar.gz` | pure Teal Mask Ogerpon | GRPO iter 4 | 81.20%, CE 0.69744 | 55185105, COMPLETE |
+| `submission_grpo_controlled_tech_grim.tar.gz` | Budew/Yveltal Tech Grim | GRPO iter 5 | 76.81%, CE 0.61839 | 55185089, 972.0 |
+| `submission_grpo_controlled_ogerpon.tar.gz` | pure Teal Mask Ogerpon | GRPO iter 4 | 81.20%, CE 0.69744 | 55185105, 719.2 |
 
 The July 31 holdout never entered training. GRPO used 320 games per arm against
 the current top 20 exact lists with a square-root-tempered popularity schedule,
@@ -48,7 +54,7 @@ Early downloaded results are 9-4 for Tech-Grim and 8-6 for Ogerpon. Tech-Grim
 is retained; Ogerpon is retired because its public rating and cross-archetype
 loss pattern are poor despite the small raw sample.
 
-## Track 8 larger-data replacement
+## Track 8 larger-data experiment (retired)
 
 Track 8 trains a shared 192d/6-layer policy on a bounded, balanced mix of
 Elo-800-999 and Elo-1000+ decisions from July 24-30 plus historical high-rated
@@ -60,8 +66,12 @@ figures remain stable when the census expands to Elo 800+. Uniform reservoir
 ingestion removes archive-order truncation. The completed Tech checkpoint beats
 the current specialist on its exact July 31 holdout (77.82%/0.58082 versus
 76.81%/0.61839 top-1/CE); the Lopunny checkpoint improves its full anchor CE
-from 1.43330 to 1.36321. Both 7.8 MiB archives are packaged but not submitted.
-Commands, research, resource caps, hashes, and gates are in
+from 1.43330 to 1.36321. Both 7.8 MiB archives are packaged. Tech-Grim is
+Kaggle ref 55195501 (`COMPLETE`, 848.9, 30-20); this failed the live promotion
+gate and is retired. Lopunny is locally ready but is no longer recommended for
+the second slot. Its upload was blocked after Kaggle reported zero daily
+submissions remaining. Commands,
+research, resource caps, hashes, and gates are in
 [`track8_bc800/README.md`](track8_bc800/README.md).
 
 ### Why the previous rating fell from a provisional 1000+ to ~900
