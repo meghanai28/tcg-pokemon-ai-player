@@ -1,0 +1,18 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_ppo_search.tar.gz",
+  "games": 4,
+  "outcomes": {
+    "wins": 4,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "decisions": 161,
+  "invalid_actions": 0,
+  "mean_latency_s": 2.4726554021864833,
+  "max_latency_s": 2.9031042870010424,
+  "worst_game_seconds": 115.08730050199665,
+  "episode_budget_s": 600.0,
+  "failures": [],
+  "passed": true
+}

@@ -1,0 +1,23 @@
+{
+  "model": "/home/meghana/tcg-pokemon-ai-player/rl_osfp/run_v3/model_period_180.npz",
+  "deck": "field_1",
+  "games": 20,
+  "per_move_seconds": 0.3,
+  "worlds": 3,
+  "guide_model": null,
+  "prior_weight": null,
+  "value_weight": null,
+  "guide_calls": 0,
+  "opponent_mode": "policy",
+  "search_wins": 14,
+  "search_losses": 6,
+  "step_caps": 0,
+  "errors": 0,
+  "win_rate": 0.7,
+  "wilson_lower_95": 0.4810232237710205,
+  "searched_decisions": 878,
+  "fallback_decisions": 0,
+  "invalid_actions": 0,
+  "mean_move_seconds": 0.30329186249662116,
+  "elapsed_minutes": 4.47196978193333
+}

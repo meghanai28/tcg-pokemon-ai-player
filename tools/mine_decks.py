@@ -20,12 +20,12 @@ import zipfile
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "track1_search", "agent"))
+sys.path.insert(0, ROOT)
 
 
 def card_names():
     try:
-        from cg.engine import get_lib
+        from foundation.cg.engine import get_lib
         lib = get_lib()
         return {c["cardId"]: c["name"] for c in json.loads(lib.AllCard().decode())}
     except Exception:

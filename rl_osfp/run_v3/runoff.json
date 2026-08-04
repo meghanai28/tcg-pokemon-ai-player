@@ -1,0 +1,153 @@
+{
+  "mode": "round-robin",
+  "candidates": [
+    140,
+    160,
+    180,
+    200
+  ],
+  "panel": [],
+  "games_per_deck": 20,
+  "total_games": 480,
+  "elapsed_minutes": 1.6482475056000112,
+  "error_kinds": {},
+  "matchups": [
+    {
+      "wins": 36,
+      "losses": 44,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 140,
+      "right": 160,
+      "wins_left": 36,
+      "wins_right": 44
+    },
+    {
+      "wins": 34,
+      "losses": 46,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 140,
+      "right": 180,
+      "wins_left": 34,
+      "wins_right": 46
+    },
+    {
+      "wins": 31,
+      "losses": 49,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 140,
+      "right": 200,
+      "wins_left": 31,
+      "wins_right": 49
+    },
+    {
+      "wins": 28,
+      "losses": 52,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 160,
+      "right": 180,
+      "wins_left": 28,
+      "wins_right": 52
+    },
+    {
+      "wins": 35,
+      "losses": 45,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 160,
+      "right": 200,
+      "wins_left": 35,
+      "wins_right": 45
+    },
+    {
+      "wins": 38,
+      "losses": 42,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "left": 180,
+      "right": 200,
+      "wins_left": 38,
+      "wins_right": 42
+    }
+  ],
+  "ranking": [
+    {
+      "period": 180,
+      "wins": 136,
+      "losses": 104,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "decided_games": 240,
+      "played_games": 240,
+      "win_rate": 0.5666666666666667,
+      "wilson_lower_95": 0.5034094093437343,
+      "score_rate": 0.5666666666666667,
+      "cap_rate": 0.0
+    },
+    {
+      "period": 200,
+      "wins": 136,
+      "losses": 104,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "decided_games": 240,
+      "played_games": 240,
+      "win_rate": 0.5666666666666667,
+      "wilson_lower_95": 0.5034094093437343,
+      "score_rate": 0.5666666666666667,
+      "cap_rate": 0.0
+    },
+    {
+      "period": 160,
+      "wins": 107,
+      "losses": 133,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "decided_games": 240,
+      "played_games": 240,
+      "win_rate": 0.44583333333333336,
+      "wilson_lower_95": 0.38429177724554286,
+      "score_rate": 0.44583333333333336,
+      "cap_rate": 0.0
+    },
+    {
+      "period": 140,
+      "wins": 101,
+      "losses": 139,
+      "draws": 0,
+      "step_caps": 0,
+      "engine_errors": 0,
+      "invalid_actions": 0,
+      "decided_games": 240,
+      "played_games": 240,
+      "win_rate": 0.42083333333333334,
+      "wilson_lower_95": 0.3601012207891274,
+      "score_rate": 0.42083333333333334,
+      "cap_rate": 0.0
+    }
+  ],
+  "selected_period": 180,
+  "cap_inclusive_leader": 180,
+  "criteria_agree": true
+}

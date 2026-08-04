@@ -1,0 +1,18 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_mcts_track1.tar.gz",
+  "games": 4,
+  "outcomes": {
+    "wins": 3,
+    "losses": 1,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "decisions": 308,
+  "invalid_actions": 0,
+  "mean_latency_s": 1.0266146619479786,
+  "max_latency_s": 1.4389804150014243,
+  "worst_game_seconds": 92.74953098600054,
+  "episode_budget_s": 600.0,
+  "failures": [],
+  "passed": true
+}
