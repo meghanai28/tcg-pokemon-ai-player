@@ -7,14 +7,37 @@ import sys
 
 import numpy as np
 
-try:
-    AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
-except NameError:
-    AGENT_DIR = "/kaggle_simulations/agent"
-    if not os.path.isdir(AGENT_DIR):
-        AGENT_DIR = os.getcwd()
+def _find_agent_dir():
+    """Locate the directory holding our files.
+
+    The Kaggle runner execs this file as a *string*, so ``__file__`` is absent,
+    and it appends the agent directory to ``sys.path`` only for the duration of
+    that exec - it is popped before ``agent()`` is ever called. Guessing a fixed
+    path is therefore unsafe: resolve by finding the files themselves.
+    """
+    candidates = []
+    try:
+        candidates.append(os.path.dirname(os.path.abspath(__file__)))
+    except NameError:
+        pass
+    candidates.append("/kaggle_simulations/agent")
+    candidates.append(os.getcwd())
+    candidates.extend(p for p in sys.path if p)
+    for base in candidates:
+        try:
+            if base and os.path.isfile(os.path.join(base, "deck.csv")):
+                return base
+        except Exception:
+            continue
+    return candidates[0] if candidates else os.getcwd()
+
+
+AGENT_DIR = _find_agent_dir()
 if AGENT_DIR not in sys.path:
     sys.path.insert(0, AGENT_DIR)
+
+# Rewritten by the packager with the 60-card list.
+EMBEDDED_DECK: list[int] = []
 
 _NET = None
 _NF = None
@@ -92,15 +115,16 @@ def agent(observation):
         _load()
         select = observation.get("select") if hasattr(observation, "get") else observation["select"]
         if select is None:
-            return list(_DECK)
+            return list(_DECK or EMBEDDED_DECK)
         return _policy(observation)
     except Exception:
         try:
             select = observation.get("select") or {}
             if not select:
-                if _DECK is None:
-                    _load()
-                return list(_DECK)
+                # Never return a short deck: that fails the episode outright.
+                return list(_DECK or EMBEDDED_DECK)
             return _fallback(select)
         except Exception:
+            if not (observation or {}).get("select"):
+                return list(EMBEDDED_DECK)
             return [0]

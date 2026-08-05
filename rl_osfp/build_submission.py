@@ -41,10 +41,26 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="osfp-package-") as staging:
         shutil.copy2(os.path.join(HERE, "agent_main.py"), os.path.join(staging, "main.py"))
         shutil.copy2(args.model, os.path.join(staging, "model.npz"))
+        # Fill EMBEDDED_DECK so the deck callback can never return a short deck.
+        main_py = os.path.join(staging, "main.py")
+        with open(main_py, encoding="utf-8") as source:
+            text = source.read()
+        marker = "EMBEDDED_DECK: list[int] = []"
+        if marker not in text:
+            raise SystemExit("agent_main.py has no EMBEDDED_DECK marker")
+        with open(main_py, "w", encoding="utf-8") as target:
+            target.write(text.replace(marker, f"EMBEDDED_DECK: list[int] = {list(deck)!r}", 1))
         shutil.copy2(os.path.join(FOUNDATION, "nn_features.py"), staging)
         shutil.copy2(os.path.join(FOUNDATION, "nn_features_rich.py"), staging)
         shutil.copy2(os.path.join(FOUNDATION, "nn_infer.py"), staging)
-        shutil.copytree(os.path.join(FOUNDATION, "cg"), os.path.join(staging, "cg"))
+        # Explicit file list, not copytree: __pycache__ must not ship.
+        engine_dir = os.path.join(staging, "cg")
+        os.makedirs(engine_dir, exist_ok=True)
+        for name in ("__init__.py", "engine.py", "game.py", "sim.py", "libcg.so"):
+            source = os.path.join(FOUNDATION, "cg", name)
+            if not os.path.isfile(source):
+                raise SystemExit(f"missing engine file {source}")
+            shutil.copy2(source, os.path.join(engine_dir, name))
         with open(os.path.join(staging, "deck.csv"), "w", encoding="utf-8") as target:
             target.write("\n".join(str(card) for card in deck) + "\n")
         with tarfile.open(args.out, "w:gz") as archive:

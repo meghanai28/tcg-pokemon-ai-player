@@ -1,7 +1,11 @@
 """Numpy-only inference for the OSFP option/count/value transformer.
 
-Exact mirror of train/model.py::TCGNet. Loads the flat .npz exported by
-export_npz(). Batched forward: ~1-3 ms for a batch of 32 on 2 CPU cores.
+Exact mirror of rl_osfp/network.py::ActorCritic. Loads the flat .npz written by
+that module. Batched forward: ~1-3 ms for a batch of 32 on 2 CPU cores.
+
+Behind the frozen search shell this ships as nn_infer_osfp.py, with
+nn_infer_adapter.py in front of it, because the shell unpacks two values from
+forward() while this returns three.
 """
 from __future__ import annotations
 

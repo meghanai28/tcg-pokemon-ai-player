@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/harness/anchors/grpo_tech_grim_972_912_811.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__655a8cb7",
+  "net_calls": 568,
+  "calls_returning_priors": 568,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 10.445779014083465,
+  "net_calls_per_decision": 3.527950310559006,
+  "decisions": 161,
+  "invalid_actions": 0,
+  "mean_decision_ms": 296.5299046459674,
+  "max_decision_ms": 405.97297900012563,
+  "outcomes": {
+    "wins": 1,
+    "losses": 1,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

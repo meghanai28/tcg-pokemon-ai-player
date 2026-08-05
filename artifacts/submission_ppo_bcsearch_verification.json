@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_ppo_bcsearch.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__3b40479c",
+  "net_calls": 640,
+  "calls_returning_priors": 640,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 23.35763381719005,
+  "node_expansions_per_decision": 3.5754189944134076,
+  "decisions": 179,
+  "invalid_actions": 0,
+  "mean_decision_ms": 296.84152677094335,
+  "max_decision_ms": 369.56978000011986,
+  "outcomes": {
+    "wins": 0,
+    "losses": 2,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}
