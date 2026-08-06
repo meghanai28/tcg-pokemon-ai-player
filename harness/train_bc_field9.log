@@ -1,0 +1,20 @@
+device: cuda
+loaded 3 shards, 67491 samples
+loaded 1 shards, 50215 samples
+train 67491 / val 50215; split=separate shards; features=rich; tensors=GPU-resident (0.89 GiB)
+warm-started model from data/model_bc_general.npz
+ep 1/10  train p=0.7466 v=0.4192  | val p=0.7616 v=0.6368 top1=74.0%
+ep 2/10  train p=0.7076 v=0.3674  | val p=0.7383 v=0.6493 top1=74.7%
+ep 3/10  train p=0.6679 v=0.2922  | val p=0.7266 v=0.7156 top1=74.8%
+ep 4/10  train p=0.6245 v=0.2204  | val p=0.7208 v=0.7219 top1=74.8%
+ep 5/10  train p=0.5835 v=0.1703  | val p=0.7211 v=0.7577 top1=75.2%
+ep 6/10  train p=0.5434 v=0.1365  | val p=0.7332 v=0.7881 top1=74.6%
+ep 7/10  train p=0.5047 v=0.1140  | val p=0.7527 v=0.7994 top1=74.3%
+early stop: option-only CE has not improved for 3 epochs
+restored best policy checkpoint: epoch 4, held-out option CE 0.7208
+
+==== GATES ====
+policy top-1 vs replay: net 74.8%  |  raw option-0 41.6%
+value MAE              : net 0.487  |  predict-mean baseline 0.993
+policy gate: PASS   value gate: PASS
+exported data/model_bc_field9.npz

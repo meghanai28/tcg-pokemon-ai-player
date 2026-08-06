@@ -207,7 +207,15 @@ def _cached_agent(agent_dir: str):
 def _play(args) -> dict:
     """Play one game. Runs in a worker process: cabt keeps battle state global."""
     dir_a, dir_b, budget, index, max_steps = args
-    os.environ["PTCG_MAX_BUDGET"] = str(budget)
+    if budget and budget > 0:
+        os.environ["PTCG_MAX_BUDGET"] = str(budget)
+    else:
+        # --budget 0 means "do not cap either side": each archive uses whatever
+        # per-move budget its own main.py decides.  This is the only condition
+        # under which a change to the shell's time allocation is visible at all,
+        # and it is also what Kaggle actually runs, since the env var is unset
+        # there.  Games take several times longer, so use fewer of them.
+        os.environ.pop("PTCG_MAX_BUDGET", None)
     # One core per worker. Left alone, each worker's numpy spawns a full BLAS
     # thread pool, the workers oversubscribe the machine, and every agent's
     # effective per-move throughput then depends on how many other games happen
@@ -325,7 +333,9 @@ def main() -> None:
     parser.add_argument("--games-per-pair", type=int, default=12,
                         help="seats alternate, so an even number is balanced")
     parser.add_argument("--budget", type=float, default=0.3,
-                        help="PTCG_MAX_BUDGET seconds/move, applied to both seats")
+                        help="PTCG_MAX_BUDGET seconds/move applied to both seats; "
+                             "0 leaves it unset so each archive uses its own "
+                             "internal allocation, which is what Kaggle does")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
     parser.add_argument("--max-steps", type=int, default=3000,
                         help="per-game step cap; cabt itself has none, so a "

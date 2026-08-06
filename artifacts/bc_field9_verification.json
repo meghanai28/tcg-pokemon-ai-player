@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_bc_field9_specialist.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__0d11a670",
+  "net_calls": 692,
+  "calls_returning_priors": 692,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 9.611690489878312,
+  "net_calls_per_decision": 3.7405405405405405,
+  "decisions": 185,
+  "invalid_actions": 0,
+  "mean_decision_ms": 1111.787548178374,
+  "max_decision_ms": 1375.5738350000684,
+  "outcomes": {
+    "wins": 1,
+    "losses": 1,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

@@ -1,0 +1,29 @@
+2 archives, 60 games, budget 0.0s/move, 5 workers
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: Successfully loaded OpenSpiel environments: 41.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: Successfully loaded OpenSpiel environments: 41.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: Successfully loaded OpenSpiel environments: 41.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: OpenSpiel games skipped: 0.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: OpenSpiel games skipped: 0.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: OpenSpiel games skipped: 0.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: Successfully loaded OpenSpiel environments: 41.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: OpenSpiel games skipped: 0.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: Successfully loaded OpenSpiel environments: 41.
+[kaggle_environments.envs.open_spiel_env.open_spiel_env] INFO: OpenSpiel games skipped: 0.
+  5/60 games (4.3 min, eta 47 min)
+  10/60 games (7.4 min, eta 37 min)
+  15/60 games (10.5 min, eta 31 min)
+  20/60 games (14.1 min, eta 28 min)
+  25/60 games (17.4 min, eta 24 min)
+  30/60 games (20.8 min, eta 21 min)
+  35/60 games (24.1 min, eta 17 min)
+  40/60 games (27.4 min, eta 14 min)
+  45/60 games (30.0 min, eta 10 min)
+  50/60 games (33.2 min, eta 7 min)
+  55/60 games (36.6 min, eta 3 min)
+  60/60 games (40.2 min, eta 0 min)
+
+=== round robin ===
+      +0.0  grpo_tech_grim_972_912_811            30- 30 ( 50.0%)
+      +0.0  submission_972model_metaonly          30- 30 ( 50.0%)
+
+wrote harness/gate_metaonly.json

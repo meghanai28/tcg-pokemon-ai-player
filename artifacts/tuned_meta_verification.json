@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_972model_tuned_meta.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__63b74cc7",
+  "net_calls": 244,
+  "calls_returning_priors": 244,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 211.5636262705057,
+  "net_calls_per_decision": 3.8125,
+  "decisions": 64,
+  "invalid_actions": 0,
+  "mean_decision_ms": 814.5478471249561,
+  "max_decision_ms": 1291.7730440003652,
+  "outcomes": {
+    "wins": 1,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

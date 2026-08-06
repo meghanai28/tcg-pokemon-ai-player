@@ -172,10 +172,32 @@ the deck slot is currently worth far more than the checkpoint slot.
 
 ## Ladder evidence (fetched 2026-08-04 via the Kaggle API)
 
-Rank **313 / 6,224**, best score **972.0**, top of board 1,297.9 (Majkel1337).
-Deadline
-**2026-08-16**. A second competition, `pokemon-tcg-ai-battle-challenge-strategy`
-($240,000, deadline 2026-09-13), is entered but unranked.
+Rank **478 / 6,396** at **871.4** as of 2026-08-06, down from 313 / 6,224 on
+2026-08-04 with no change in our agent. The board is strengthening around a
+static submission, and the top fell too (1,297.9 Majkel1337 on 08-04 against
+1,204.0 flg on 08-06), so the whole scale moves.
+
+Deadline **2026-08-16 23:59**, 5 submissions a day, `awards_points: True`, so
+medals are awarded despite the "Knowledge" reward field. A second competition,
+`pokemon-tcg-ai-battle-challenge-strategy` ($240,000, `awards_points: False`),
+is entered but unranked.
+
+What the board pays, fetched 2026-08-06:
+
+| rank | score | note |
+|---:|---:|---|
+| 1 | 1,204.0 | flg |
+| 10 | 1,111.0 | |
+| 23 | 1,066.5 | roughly the gold cutoff (top 10 + 0.2% of 6,396) |
+| 100 | 998.5 | |
+| 320 | 906.6 | roughly the silver cutoff (top 5%) |
+| **478** | **871.4** | **us** |
+| 640 | 836.6 | roughly the bronze cutoff (top 10%) |
+
+So we are currently inside bronze, about 35 points from silver and about 195
+from gold. Our best archive at its usual ~940 would be around rank 210, which is
+silver. Getting to gold needs a real gain of roughly 130 points over the
+champion, which nothing measured in this repo has produced.
 
 Three facts from submission history that should govern decisions:
 
@@ -183,16 +205,11 @@ Three facts from submission history that should govern decisions:
   ever made (`submission_purebc_scaled`, "192d/6L, 291k Elo-1000 decisions, NO
   search, argmax policy") scored **591.1**, the worst result on record. Every
   search-based submission scored **873 to 972**.
-- **Ladder score carries roughly ±160 points, and it drifts downward.** One
-  archive (md5 `4f6b66a1ecb8ee13f9d67e5d97a3bdeb`) was submitted three times
-  and scored **972.0 (08-02) → 911.9 (08-03) → 810.8 (08-04)**. Identical bytes,
-  a 161-point spread, monotonically falling. An earlier note here put the noise
-  at ±75 from a single pair; three points show it is more than twice that, and
-  the trend suggests the board is strengthening around a fixed agent rather than
-  the score merely being noisy. Two consequences: never compare a submission to
-  a score from a *different day*, and never conclude anything from one
-  submission. A local gate over hundreds of games is more trustworthy than any
-  single ladder result.
+- **Ladder score carries roughly ±70 points of matchmaking luck on identical
+  bytes.** See the section below; the mechanism is now measured rather than
+  guessed. Never compare a submission to a score from a different run, and never
+  conclude anything from one submission. A local gate over hundreds of games is
+  more trustworthy than any single ladder result.
 - **Deck choice moves the score as much as the model.** 967.1 vs 917.6 was the
   same model with a different deck; 972.0 vs 719.2 likewise. Re-gate the deck
   whenever the pilot changes.
@@ -201,6 +218,115 @@ Three facts from submission history that should govern decisions:
 2026-08-04). Its 75% ladder win rate conflates deck and pilot, but it is the top
 player's choice, not noise. Measured under a *search* pilot it still only tied
 for last among candidates, so gate it rather than assuming either way.
+
+## How the ladder actually scores us (measured 2026-08-05 from the episode API)
+
+This is the most important thing in this file, because it decides how every
+other measurement here should be read. `tools/ladder_status.py` reports it live,
+and the raw source is
+`https://www.kaggle.com/api/i/competitions.EpisodeService/ListEpisodes`, which
+returns every episode a submission played with the rating before and after and
+the opponent's rating.
+
+**The score is an Elo random walk that starts at 600 and freezes.** Measured
+mean absolute rating change per game, across our submissions:
+
+| games played | mean rating move per game |
+|---|---:|
+| 1 to 10 | **50** |
+| 11 to 30 | 17 |
+| 31 and up | 6 |
+
+Matchmaking pairs on current rating, so the bracket the first dozen games put a
+submission in is the bracket it stays in: after game 30 the step size is too
+small to climb out. Two examples of that first-dozen luck, both agents strong:
+
+- the 972 archive's first game was a win over a 628 and paid **+117.2**
+- the retrained-prior archive's first game was a win over a **176** (a broken
+  agent) and paid **+20.7**
+
+**Only the most recent handful of submissions stay active.** Everything older
+stops receiving episodes and keeps its last rating forever. Retirement follows
+upload order, so `ladder_status.py` prints which one is about to be frozen.
+The exact cap is not published and our own history does not pin it to a
+constant: two to three run at once in the steady state, but six were briefly
+playing on 2026-08-04 after five uploads inside 80 minutes. Do not hardcode a
+number, read it off the tool.
+
+**The board does NOT keep our best score ever, and an upload can lower it.**
+This is the trap, and an earlier version of this section got it backwards. Read
+directly off the leaderboard on 2026-08-06:
+
+```
+   477 Eggplanck                871.6
+   478 Meghana284               871.4     <- us, of 6,396
+   479 Ochir Dorzhiev           871.3
+```
+
+871.4 is the live score of ref 55264582. It is not 972.0 (our best submission
+ever, retired 2026-08-02) and it is not 942.3 (ref 55256846, the champion
+resubmit). Only *active* submissions are ranked, and a retired one stops
+counting the moment it is retired. A board score of 972.0 would sit near rank
+150, so the error is worth about 330 places.
+
+So `max(public_score)` over the submission list is **not** the board score, and
+`tools/ladder_status.py` no longer prints it as one. Uploading retires the oldest
+active submission, so an upload made while our best archive is the oldest one
+costs board position immediately. That happened on 2026-08-06: uploading ref
+55290078 retired the 942.3 champion and dropped the board to 871.4.
+
+The saving grace is the deadline. Only the score showing on **2026-08-16 23:59**
+is ranked, so a dip before then costs nothing as long as the slots are managed
+back up in time.
+
+### So the "monotonic decline" in the old version of this file was not real
+
+The old note read 972.0 to 911.9 to 810.8 on identical bytes and concluded the
+board was strengthening around a fixed agent. Both halves are wrong:
+
+- **810.8 was never a converged score.** Ref 55233305 played **three episodes**
+  before two later uploads retired it. It is a truncated run, not a result.
+- **The sequence is not monotonic.** The same bytes have now scored 972.1,
+  911.9 and 942.3, on runs of 65, 83 and 82 episodes. Mean 942, sample standard
+  deviation 30. There is no trend, just a spread.
+
+### Why the retrained-prior submission "lost" to the champion
+
+Same day, 5.4 hours apart: champion 942.3, retrained prior 867.3. That looks
+like a 75-point regression from training on fresh data. It is not. Adjusting for
+who each one actually played:
+
+| | games | win rate | mean opponent | performance rating |
+|---|---:|---:|---:|---:|
+| champion (ref 55256846) | 80 | 57.5% | 888.0 | **940.6** |
+| retrained prior (ref 55264582) | 70 | **58.6%** | **810.5** | 870.6 |
+
+The retrained prior won a *higher* share of its games. It was simply placed in a
+field averaging 77.5 points weaker, and 77.5 is almost exactly the 75-point gap
+in the reported scores. Both agents sit about 55 to 60 points above their own
+field. They are the same strength, which is exactly what the local 300-game gate
+said when it returned 151-149.
+
+**The local harness was right and the ladder reading was wrong.** When a gate
+and a single ladder result disagree by less than ~100 points, believe the gate.
+
+### What this means for every gate in this file
+
+- **Compare with performance rating, never with the raw score**, whenever both
+  numbers come from the ladder. `ladder_status.py` prints it.
+- **A change has to be worth more than ~70 points to be visible at all**, so
+  small true improvements cannot be detected by submitting them. They have to be
+  gated locally over hundreds of games.
+- **Uploads are not free, but before the deadline a dip does not matter.** What
+  is ranked is the best of our *active* submissions on 2026-08-16 at 23:59, so
+  the only score that counts is the one showing then. Until roughly 2026-08-14,
+  take draws freely: a submission that lands badly can be replaced. In the last
+  two days, get two or three champion draws running, let them mature past ~30
+  episodes, and then **stop uploading**, because every further upload retires
+  the oldest active one and could throw away the good draw.
+- **Never read the board score off `max(public_score)`.** That counts retired
+  submissions and reads about 100 points high. Use
+  `competitions_list().user_rank` and `tools/ladder_status.py`.
 
 ### The deck we keep shipping is not a top deck in the current meta
 
@@ -559,6 +685,206 @@ engine-rejected actions, and acceptable per-decision latency.
 Checkpoints carry `_meta = [d_model, layers, heads, d_ff, MAX_COUNT, 2]`; the
 trailing `2` is the format version and both loaders reject anything else.
 
+## Retraining the prior does NOT help (measured 2026-08-05, 300 games)
+
+The cleanest experiment this project has run. Same frozen shell, same Tech-Grim
+deck, only `model.npz` differs. The new prior was rebuilt from scratch on
+937,178 Elo-1000+ Tech-Grim decisions spanning Jul 24 to Aug 1 (the 972 used
+Jul 25-30), scored 76.0% top-1 on a clean Aug 2 temporal holdout, then took 5
+conservative GRPO iterations against a 20-deck meta mined from 9,104 Aug 1-2
+episodes.
+
+| | record | win rate | Wilson 95% |
+|---|---|---:|---|
+| retrained prior | 151-149 | 50.3% | [0.447, 0.560] |
+| the 972 archive | 149-151 | 49.7% | [0.440, 0.553] |
+
+Ratings +1.2 against -1.2 over 300 decided games with zero draws. Flat.
+
+Watch the trajectory, because it is the lesson: 55.9% at 59 games, 55.4% at 121,
+50.3% at 300. Early reads regress. Do not act on anything under ~300 games here.
+
+Three things this rules out:
+
+- **Fresh data does not help.** 40% more decisions on a more current meta: flat.
+- **GRPO as configured does nothing.** It moved the weights **0.0935%** globally
+  and its KL stayed near 1e-4, roughly 7x smaller than the 972 run's 0.0015. By
+  iteration 3 only **2 of 8 groups** were active, because a group whose 6 games
+  all win or all lose standardizes to zero advantage and is discarded. Fixing
+  GRPO means fixing group construction, not the learning rate.
+- **The 160d/5L prior on ~1M Elo-1000 decisions is saturated.** More of the same
+  data will not move it. Submitted anyway as ref 55264582, since the gate
+  measures against our own stale archive rather than the live field.
+
+## Both shell fixes were gated and both are dead (2026-08-05/06)
+
+The two bugs below are real. Fixing either one does not help, and one hurts.
+Both were gated with `--budget 0` so each side used its own allocation, which is
+what Kaggle does.
+
+| change | archive | result vs the champion |
+|---|---|---|
+| horizon 160 + cap 3.0 s | `submission_972model_tunedbudget` | **8-15 (34.8%)** over 23 games |
+| 20-archetype opponent model | `submission_972model_metaonly` | **30-30 (50.0%)** over 60 games, Wilson [0.377, 0.623] |
+
+The opponent-model archive is byte-identical to the champion except for
+`main.py`, and `main.py` differs only in the `META_DECKS`/`META_WEIGHT` tables.
+So that 30-30 is as clean an isolation as this project has ever run, and the
+answer is nothing.
+
+Two things worth keeping from it:
+
+- **The budget fix losing is informative.** Giving the same search 2.7x the
+  think time made it worse. That fits the pattern already recorded below, where a
+  learned value head and an oversized lethality term both made search worse:
+  the static evaluator is the binding constraint, and deeper search converges
+  harder onto its bias. Spend effort on the evaluator, not on the clock.
+- **A mirror gate under-tests an opponent model.** Both sides piloted Tech-Grim,
+  which the old July table already matched at Jaccard 0.846, so the fix had
+  almost nothing to correct. The decks it actually helps with are the ones it
+  misses: `field_9` at 0.143, `field_16` at 0.188, `field_4` at 0.277, all of
+  which go to 1.000 under the new table. Testing the fix properly needs an
+  opponent piloting one of those, not a mirror. That test has not been run, and
+  given the 30-30 it is low priority.
+
+`foundation/search_shell_meta_only.py` is the isolation build, kept because it is
+the only clean single-variable shell we have.
+
+## The two shell bugs themselves, for reference
+
+### 1. The agent uses 13.9% of its thinking time
+
+`remainingOverageTime` is 600 s. Across 888 real cabt games the median game is
+**84 decisions per side** (p90 104, max 140). Two under-spends stack in `_budget`:
+
+```python
+moves_left = max(60, 300 - _GAME.calls)          # assumes ~300 decisions/side
+cap = float(os.environ.get("PTCG_MAX_BUDGET", "1.1"))   # then clips the rest
+```
+
+The horizon is ~3.5x too long, which shrinks `share`, and the 1.1 s cap clips
+what survives. Measured result: **83.6 s spent of 600 s**, about 516 s discarded
+every game. The comment above `_budget` claims the cap was raised to target
+300-400 s per game; with the cap at 1.1 that never landed.
+
+`foundation/search_shell_tuned.py` changes exactly two constants (horizon 160,
+cap 3.0): 209 s on a typical game, and 456 s with 144 s still spare on a
+200-move game, longer than any of the 888 observed. Search strength scales hard
+with think time here (the same agent went 1-7 at 0.1 s/move and 10-0 at 1.1).
+
+**Caveat that must be checked before trusting it:** `_search_move` also carries
+`max_nodes=20000`, and the loop exits on `live_nodes < max_nodes` as well as the
+deadline. At 0.3 s the search reaches ~2,100 nodes, so ~21,000 at 3.0 s. The node
+cap probably binds around 2.8 s and would silently cancel part of the gain.
+Measure nodes per move at the tuned budget before concluding anything.
+
+### 2. The opponent model covers 54.2% of the current field
+
+The shell hardcodes 12 archetypes mined from 2,091 July replays. The current
+field has 20. By weight, only 54.2% of it can be represented; the rest matches
+nothing closer than these:
+
+| current deck | field weight | best jaccard in the shipped shell |
+|---|---:|---:|
+| Teal Mask Ogerpon (`field_1`) | 1,229 | 0.143 |
+| Mega Lopunny, Majkel's main (`field_4`) | 631 | 0.277 |
+| `field_6` | 379 | 0.263 |
+| `field_7` | 370 | 0.154 |
+| James Cox's list (`field_9`) | 261 | 0.143 |
+
+`META_DECKS` is what determinizes the opponent's hidden cards, so against ~46%
+of opponents the search samples worlds from the wrong decklist and optimises
+against a fantasy opponent. `foundation/search_shell_tuned_meta.py` carries both
+fixes with the 20 current archetypes.
+
+Gate all three (stock, tuned, tuned+meta) with `--budget 0`, which leaves
+`PTCG_MAX_BUDGET` unset so each side uses its own allocation. That is what
+Kaggle does and the only condition where the change is visible at all.
+
+## The BC pipeline is revived and lives in `bc_train/` (2026-08-06)
+
+`train_bc.py` was in quarantine and its imports were split across three places
+with **two incompatible encoders**, which is the trap here. `bc_train/` stages
+the exact set the champion ships, so a model trained there is loadable by the
+frozen shell:
+
+| file | source | why |
+|---|---|---|
+| `train_bc.py`, `model.py` | quarantine `track1_search/train/` | the trainer |
+| `nn_features.py` | **the champion archive** | `MAX_OPT 24`, so `SEQ 53` |
+| `nn_features_rich.py` | champion archive (same bytes as quarantine) | deck-aware |
+| `nn_infer.py` | champion archive | the numpy export target |
+
+**Do not use `foundation/nn_features*.py` for BC.** Those are the rl_osfp
+encoders at `MAX_OPT 64`, so `SEQ 93`. The champion is `SEQ 53`. Training against
+the wrong one produces a model that loads without error and plays a different
+policy, which is the exact silent failure this repo keeps hitting.
+
+Checkpoints carry `_meta = [160, 5, 5, 320]` and 75 tensors, matching the
+champion's `model.npz` byte-for-byte in shape.
+
+### Why the deck specialist has to be a fine-tune, not a fresh train
+
+Tech-Grim is 36% of the mined field, so it dominates the corpus. Every deck that
+actually wins is rare precisely because only a few strong pilots run it:
+
+| deck | expert win rate | ladder games | decisions we have |
+|---|---:|---:|---:|
+| Tech-Grim (`field_0`/`field_2`) | 48.5% | 4,611 | **937,178** |
+| `field_9` (James Cox, rank 8) | 59.0% | 261 | 117,706 |
+| `field_4` (Majkel1337's main) | 59.6% | 631 | 71,046 |
+| `field_16` (Majkel's side deck) | 75.0% | 136 | **6,097** |
+
+So we ship the deck with the worst win rate because it is the only one with
+enough data to train on directly. The answer is a general trunk plus a fine-tune,
+not a fresh train on 6k to 118k decisions.
+
+Measured, both stages early-stopped and both gates passed:
+
+| stage | data | held-out top-1 | raw baseline | value MAE |
+|---|---:|---:|---:|---:|
+| general base | 720,000 decisions, all decks, Elo-weighted | 70.5% | 34.6% | 0.615 |
+| `field_9` fine-tune | 67,491 decisions, `--init` from the base, `--lr 2e-4` | **74.8%** | 41.6% | 0.487 |
+
+The fine-tune holdout is the **Aug 2** `field_9` shard, a day neither model
+trained on, so it is a real temporal holdout rather than a random split. For
+scale, the Tech-Grim specialist that measured flat against the champion scored
+76.0% on its own holdout, so 74.8% is the same quality band.
+
+```bash
+# general trunk
+OMP_NUM_THREADS=6 PYTHONPATH=bc_train .venv/bin/python bc_train/train_bc.py \
+  --data data/bc_general_train --val-data data/bc_general_holdout \
+  --max-per-shard 90000 --dim 160 --layers 5 --heads 5 --features rich \
+  --elo-weight 0.5 --epochs 12 --patience 4 --out data/model_bc_general.npz
+
+# deck specialist, warm-started from the trunk
+OMP_NUM_THREADS=6 PYTHONPATH=bc_train .venv/bin/python bc_train/train_bc.py \
+  --data data/bc_field9_ft --val-data data/bc_field9_ft_holdout \
+  --init data/model_bc_general.npz --lr 2e-4 \
+  --dim 160 --layers 5 --heads 5 --features rich --elo-weight 0.5 \
+  --epochs 10 --patience 3 --out data/model_bc_field9.npz
+```
+
+Package by copying the champion archive and swapping **only** `model.npz` and
+`deck.csv`, then diff the tarballs to prove nothing else moved. Building from a
+staging directory that was reused for another build silently reintroduced the
+meta-only `main.py` once; the diff caught it.
+
+## Resource limits, enforced
+
+Two WSL VM terminations were caused by launching jobs whose memory requirement
+was never computed. `train_bc.py` holds the corpus as CPU tensors at a measured
+**7,396 bytes per decision**:
+
+    1,150,331 decisions ->  7.9 GiB   fine
+    1,920,408 decisions -> 13.2 GiB   killed the VM
+
+Checking *free* RAM is not a safety check. Run `tools/resource_guard.py` before
+any heavy job; it computes the requirement and refuses. Caps on this machine:
+**8.0 GiB** of dataset tensors, **5 workers** of 14 threads, **6 GiB** free to
+start.
+
 ## Candidates currently built, and what each one isolates
 
 All four ship the frozen shell, so `main.py` is constant across them. Gate them
@@ -590,21 +916,114 @@ decklists in `steps[1]`, and `data/fresh/leaderboard/` holds the score table to
 join against. `tools/top_decks.py` does that join. Top of the board on
 2026-08-04 was Majkel1337 at 1,297.9 against our 810.8.
 
+## Which algorithm: BC then conservative GRPO, not PPO from scratch
+
+Every score above 850 this project has produced came from **BC-initialised**
+weights. Nothing started from random init has broken 600.
+
+| approach | search | ladder |
+|---|---|---|
+| BC + conservative GRPO | yes | **972.0**, 928.5, 918.1, 910.7, 903.2 |
+| BC | yes | 967.1, 917.6, 873.5 |
+| BC, 192d, more data | yes | 848.9 |
+| BC | no | 591.1 |
+| PPO self-play from random | no | 480.0 |
+| PPO self-play priors + the deleted PUCT | yes | 592.0 |
+| PPO self-play priors + the frozen shell | yes | ~316 (harness estimate) |
+
+The v3 PPO run was **not** mistuned: `approx_kl` median 0.0133 against a 0.04
+target, clip fraction 0.128, value loss 0.49 down to 0.13, entropy 0.78 down to
+0.55. It optimised correctly. The learner win rate was flat at 72.4 / 74.0 /
+74.0% across 200 periods, and the runoff could not separate period 180 from 200.
+The deficit is the starting point, not the optimiser: BC begins from 1.33M
+decisions by 1000+ Elo humans, and GRPO then refines with a KL around 0.0015 so
+it sharpens that prior instead of overwriting it.
+
+The full pipeline that produced 972 survives in quarantine and is revivable:
+`track1_search/train/train_bc.py`, `train/ingest_episodes.py`,
+`track5_grpo/train_grpo.py`, and `track6_controlled/` (the deck-specialist arms).
+
+## Deck gates say Tech-Grim holds, but they cannot say the deck is best
+
+Round 2, 200 games at 1.1 s/move, everything on the frozen shell:
+
+| archive | rating | record | win rate |
+|---|---:|---|---:|
+| `grpo_tech_grim` | +202.6 | 64-16 | 80.0% |
+| `grpo` + `field_16` | +105.8 | 53-27 | 66.2% |
+| `grpo` + `field_4` | +49.0 | 46-34 | 57.5% |
+| `shell_nonet` (no model at all) | -164.8 | 20-60 | 25.0% |
+| `ppo_bcsearch` | -192.6 | 17-63 | 21.2% |
+
+Two readings, and the second is the one that matters:
+
+- The GRPO net priors are worth a great deal. Stripping the model entirely drops
+  the same archive to 25%.
+- **A deck swap alone is not a deck test.** The 972 recipe trains the BC prior on
+  the *exact deck it ships with* (`track6_controlled`, "controlled deck-specialist
+  arms"). Swapping `deck.csv` under a Tech-Grim-specialised prior breaks that
+  pairing, so `field_16` and `field_4` losing means "do not swap the deck without
+  retraining the prior", **not** "these decks are worse". The deck question is
+  open, not closed.
+
+Bradley-Terry ratings are only comparable *within* one run, since they are
+centred on that run's pool. Do not push round 2 ratings through the round 1
+calibration fit and quote ladder numbers.
+
+## What the top of the board actually plays (mined 2026-08-04)
+
+From 9,104 episodes joined to the leaderboard, via `tools/top_decks.py` and a
+per-pilot scan. Decks map onto our pool at Jaccard 1.000, so these are exact.
+
+| pilot | games | win rate | avg steps | deck |
+|---|---:|---:|---:|---|
+| James Cox & Henry Chao (rank 8) | 258 | 59.3% | **137** | `field_9`, and only this one |
+| Majkel1337 (rank 1) | 532 | 60% | 183 | `field_4`, Mega Lopunny |
+| " | 503 | 56% | 127 | `field_1`, Teal Mask Ogerpon |
+| " | 136 | **75%** | 132 | `learner_0`, Mega Lucario |
+
+Two things worth acting on:
+
+- **`learner_0` is Majkel's rarest list, not his main.** Our pool builder picked
+  it on Wilson lower bound and thereby selected his 136-game side deck over his
+  532-game main. A high win rate on a small, self-selected sample is not the same
+  as a deck the best player relies on.
+- **`field_9` closes fastest**, 137 steps against 153 to 176 for the other top
+  pilots, and its pilot never deviates from it. Short games suit us: fewer
+  decisions means fewer chances for a weaker policy to drift off the line.
+
 ## What to do next, in order
 
-1. **Finish the deck gate.** It is the highest-value slot: deck swaps have moved
-   the ladder by 250 points (972.0 vs 719.2) on an unchanged model, and our
-   shipped deck is a 48.5% list in the current meta.
-2. **Then retrain the policy on whichever deck wins**, using
-   `tools/make_learner_pool.py` plus `train.py --resume`. Training the policy on
-   a deck it has never piloted is the concrete, measured reason
-   `submission_ppo_bcsearch` is weak. Do not do this before step 1 or the
-   specialisation targets the wrong list.
-3. **Re-gate, including the anchors.** Never conclude from a comparison that
-   contains only our own work.
+0. **Manage the active slots toward the deadline.** The board ranks the best of
+   our *active* submissions, not our best ever, so the number that counts is the
+   one showing on 2026-08-16. Until about 08-14, uploads are cheap and worth
+   spending: 5 a day, and identical bytes have scored 972.1, 942.3 and 911.9, so
+   draws differ by ~30 points for free. In the last two days, stop uploading once
+   a good draw is active. Run `tools/ladder_status.py` before every upload to see
+   what it will retire. None of this makes the agent stronger, so it runs
+   alongside the real work below rather than replacing it.
+1. **Do not re-derive a search.** We have one that scored 972 and one that
+   scored 405, and the gap is not recoverable by tuning constants.
+2. **Stop tuning the shell's constants.** Both measured changes lost. See the
+   shell-fix section; the budget change lost 8-15 and the opponent-model change
+   lost over 60 games with byte-identical model and deck.
+3. **Revive BC plus GRPO on fresh data.** Re-ingest the Aug 1-2 replays with Elo
+   weighting, train a BC prior **specialised on the deck we intend to ship**,
+   GRPO-refine it, and gate every iteration against the anchors. This is the only
+   path that has ever produced a score above 850. Note the ceiling: the Tech-Grim
+   version of exactly this returned 151-149 against the champion, so expect a
+   deck change to be doing the work if anything is.
+4. **Only then re-test the deck**, with a prior trained for that deck. `field_9`
+   is the strongest target on the evidence above. `data/bc_field_9_probe` holds
+   117,706 decisions, which is 0.8 GiB and inside the guard.
+5. Fixing the v3 PPO deck mismatch (`tools/make_learner_pool.py` plus
+   `train.py --resume`) is cheap and would confirm the diagnosis, but its ceiling
+   is low. Treat it as a diagnostic, not a route to a shipping agent.
 
-Do not re-derive a search. We have one that scored 972 and one that scored 405,
-and the difference is not recoverable by tuning constants.
+**Sizing note for step 3.** `data/bc_general_train` is 1,520,408 decisions, which
+is 10.5 GiB of CPU tensors and over the 8.0 GiB cap. Pass
+`--max-per-shard 129047` to bring it to about 1.16M. `tools/resource_guard.py
+--data data/bc_general_train` prints exactly this and refuses otherwise.
 
 ## Conventions
 

@@ -1,0 +1,37 @@
+{
+  "archives": [
+    "grpo_tech_grim_972_912_811",
+    "submission_972model_metaonly"
+  ],
+  "games_per_pair": 60,
+  "budget_seconds_per_move": 0.0,
+  "elapsed_minutes": 40.232531479994456,
+  "ratings": {
+    "grpo_tech_grim_972_912_811": 0.0,
+    "submission_972model_metaonly": 0.0
+  },
+  "totals": {
+    "submission_972model_metaonly": {
+      "wins": 30,
+      "losses": 30,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811": {
+      "wins": 30,
+      "losses": 30,
+      "draws": 0,
+      "errors": 0
+    }
+  },
+  "invalid_action_games": {},
+  "step_capped_games": 0,
+  "pairs": {
+    "grpo_tech_grim_972_912_811|submission_972model_metaonly": {
+      "wins": 30,
+      "losses": 30,
+      "draws": 0,
+      "errors": 0
+    }
+  }
+}

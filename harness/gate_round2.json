@@ -1,0 +1,115 @@
+{
+  "archives": [
+    "grpo_tech_grim_972_912_811",
+    "submission_ppo_bcsearch",
+    "submission_shell_nonet_techgrim",
+    "submission_grpo_deck_field16",
+    "submission_grpo_deck_field4"
+  ],
+  "games_per_pair": 20,
+  "budget_seconds_per_move": 1.1,
+  "elapsed_minutes": 52.48636585871379,
+  "ratings": {
+    "grpo_tech_grim_972_912_811": 202.6487030588592,
+    "submission_ppo_bcsearch": -192.60135102203904,
+    "submission_shell_nonet_techgrim": -164.8021408416355,
+    "submission_grpo_deck_field16": 105.79589856246922,
+    "submission_grpo_deck_field4": 48.95889024234609
+  },
+  "totals": {
+    "grpo_tech_grim_972_912_811": {
+      "wins": 64,
+      "losses": 16,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_ppo_bcsearch": {
+      "wins": 17,
+      "losses": 63,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_shell_nonet_techgrim": {
+      "wins": 20,
+      "losses": 60,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field16": {
+      "wins": 53,
+      "losses": 27,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field4": {
+      "wins": 46,
+      "losses": 34,
+      "draws": 0,
+      "errors": 0
+    }
+  },
+  "invalid_action_games": {},
+  "step_capped_games": 0,
+  "pairs": {
+    "grpo_tech_grim_972_912_811|submission_ppo_bcsearch": {
+      "wins": 20,
+      "losses": 0,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811|submission_shell_nonet_techgrim": {
+      "wins": 18,
+      "losses": 2,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811|submission_grpo_deck_field16": {
+      "wins": 14,
+      "losses": 6,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811|submission_grpo_deck_field4": {
+      "wins": 12,
+      "losses": 8,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_ppo_bcsearch|submission_shell_nonet_techgrim": {
+      "wins": 13,
+      "losses": 7,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field16|submission_ppo_bcsearch": {
+      "wins": 18,
+      "losses": 2,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field4|submission_ppo_bcsearch": {
+      "wins": 18,
+      "losses": 2,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field16|submission_shell_nonet_techgrim": {
+      "wins": 12,
+      "losses": 8,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field4|submission_shell_nonet_techgrim": {
+      "wins": 17,
+      "losses": 3,
+      "draws": 0,
+      "errors": 0
+    },
+    "submission_grpo_deck_field16|submission_grpo_deck_field4": {
+      "wins": 17,
+      "losses": 3,
+      "draws": 0,
+      "errors": 0
+    }
+  }
+}
