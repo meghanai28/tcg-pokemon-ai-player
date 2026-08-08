@@ -9,17 +9,12 @@ longer large enough to escape.
 
 Two consequences this script exists to serve:
 
-  1. Only the most recent handful of submissions stay active, and retirement
-     follows upload order.  Two or three have been live at once in the steady
-     state.  A retired submission keeps its last rating forever, so knowing
-     which one is about to be frozen, and what it is currently worth, is the
-     whole game.  A submission retired at 40 episodes is a different number
-     from the same bytes retired at 80.
-  2. The board does NOT keep our best score ever.  `max(public_score)` over the
-     submission list said 972.0 on 2026-08-06 while the board had us at rank
-     478, which pays 871.4, matching a live submission exactly.  Retired
-     submissions stop counting, so what gets ranked is a score that is still
-     moving, and the only one that matters is whatever shows at the deadline.
+  1. Kaggle's published competition settings keep the **latest two**
+     submissions active. Retirement follows upload order, so the oldest active
+     archive is the one the next successful upload replaces.
+  2. The leaderboard shows the **best scoring active** submission, not the
+     newest one. An earlier version of this tool inferred the opposite from
+     noisy rank snapshots and consequently understated the board score.
 
 Usage:
     py tools/ladder_status.py
@@ -36,15 +31,8 @@ import time
 import requests
 
 ENDPOINT = "https://www.kaggle.com/api/i/competitions.EpisodeService/ListEpisodes"
-MAX_DAILY = 5             # competitions_list -> max_daily_submissions
-IDLE_HOURS = 3.0          # no episode in this long means the slot was retired
-
-# Kaggle does not publish the active-submission rule and our history does not
-# pin it to a constant: two to three have been live at once in the steady state,
-# but six were briefly playing on 2026-08-04 after five uploads inside 80
-# minutes.  Retirement follows upload order, so the oldest live submission is
-# the one at risk.  Report what is measured rather than asserting a cap.
-TYPICAL_SLOTS = 3
+MAX_DAILY = 5             # competition settings
+ACTIVE_SLOTS = 2          # competition overview: "Only your most recent 2 are active"
 
 
 def session() -> requests.Session:
@@ -139,15 +127,14 @@ def main() -> None:
     import kaggle
     api = kaggle.KaggleApi()
     api.authenticate()
-    everything = api.competition_submissions(args.competition)
+    # The API defaults to one 20-row page. That made "best ever" forget the
+    # actual 972 submission as soon as it aged off page one.
+    everything = api.competition_submissions(args.competition, page_size=200)
     sess = session()
     now = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
 
-    # `max(public_score)` is NOT the board score.  It counts submissions that
-    # were retired days ago and reads roughly 100 points high: on 2026-08-06 it
-    # said 972.0 while the board had us at rank 478, which pays 871.4.  The board
-    # ranks the best of our *active* submissions, so that is what gets printed
-    # as the board score below, and `user_rank` is fetched as the check on it.
+    # Kaggle ranks the best of the two active submissions. Keep the historical
+    # maximum separate because a retired archive no longer represents the board.
     retired_best = max((float(s.public_score) for s in everything
                         if s.public_score not in (None, "")), default=0.0)
     rank = None
@@ -161,6 +148,9 @@ def main() -> None:
 
     print(f"{'submission':>10} {'eps':>4} {'score':>7} {'peak':>7} {'perf':>7} "
           f"{'state':>12}  file")
+    completed = [s for s in everything
+                 if str(getattr(s, "status", "")).endswith("COMPLETE")]
+    active_refs = {s.ref for s in completed[:ACTIVE_SLOTS]}
     live: list[tuple] = []
     for sub in everything[:args.limit]:
         rows = episodes(sess, sub.ref)
@@ -173,10 +163,8 @@ def main() -> None:
         perf = performance_rating(rows)
         last = dt.datetime.fromisoformat(rows[-1]["end"][:19])
         idle = (now - last).total_seconds() / 3600.0
-        state = "LIVE" if idle < IDLE_HOURS else f"frozen {idle:.0f}h"
-        if idle < IDLE_HOURS:
-            # retirement is by upload order, not by score and not by last
-            # episode, so the sort key has to be the submission date
+        state = "ACTIVE" if sub.ref in active_refs else f"retired {idle:.0f}h"
+        if sub.ref in active_refs:
             live.append((str(sub.date), sub.ref, score, len(rows), sub.file_name))
         perf_s = f"{perf:.0f}" if perf is not None else "-"
         print(f"{sub.ref:>10} {len(rows):>4} {score:>7.1f} {peak:>7.1f} "
@@ -189,15 +177,15 @@ def main() -> None:
     board = max((row[2] for row in live), default=0.0)
     print(f"\nBOARD SCORE (best ACTIVE submission): {board:.1f}"
           + (f"   rank {rank}" if rank else ""))
-    print(f"  best score any submission ever reached was {retired_best:.1f}, "
-          "but retired submissions do not count")
+    print(f"  best historical submission reached {retired_best:.1f}; retired "
+          "scores are not ranked")
     print(f"\n{len(live)} submission(s) currently playing, oldest upload first:")
     for i, (_, ref, score, count, name) in enumerate(live):
         tag = "  <- oldest, so the next upload retires this one" if i == 0 else ""
         print(f"  {ref}  {score:7.1f}  {count:>3} eps  {name}{tag}")
-    if len(live) < TYPICAL_SLOTS:
-        print(f"  usually about {TYPICAL_SLOTS} stay live, so an upload now "
-              "probably retires nothing")
+    if len(live) < ACTIVE_SLOTS:
+        print(f"  fewer than the published {ACTIVE_SLOTS} active slots were found; "
+              "check for a pending or errored recent submission")
 
 
 if __name__ == "__main__":

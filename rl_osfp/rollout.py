@@ -55,6 +55,7 @@ class GameOutcome:
     engine_steps: int
     invalid_actions: int
     decisions: dict[int, list[Decision]]
+    step_capped: bool = False
 
 
 _WORKER: dict[str, Any] = {}
@@ -96,6 +97,7 @@ def _run_task(task: GameTask) -> GameOutcome:
         invalid_actions=result.invalid_actions,
         # Ship back only what was asked for; decisions dominate IPC volume.
         decisions={seat: result.decisions[seat] for seat in task.record_seats},
+        step_capped=result.step_capped,
     )
 
 
@@ -133,8 +135,6 @@ class RolloutPool:
         if not tasks:
             return
         yield from self._pool.imap_unordered(_run_task, tasks, chunksize=chunksize)
-
-
 def serial_run(tasks: list[GameTask], threads: int = 8) -> Iterator[GameOutcome]:
     """In-process equivalent of ``RolloutPool.run`` for --workers 1 and tests."""
     if "arena" not in _WORKER:

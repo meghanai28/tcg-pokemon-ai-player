@@ -90,10 +90,11 @@ def main() -> None:
     with open(args.out, "w", encoding="utf-8") as target:
         json.dump(pool, target, indent=2)
     print(f"\nwrote {args.out}")
-    print("warm start from the existing run rather than from scratch:")
-    print("   cp -r rl_osfp/run_v3 rl_osfp/run_v4   # keeps training_state.pt + league")
-    print(f"   .venv/bin/python -m rl_osfp.train --resume --pool {args.out} \\")
-    print("       --out-dir rl_osfp/run_v4 --periods 260")
+    print("start a clean BC-initialised RL run; never copy/resume a state that used")
+    print("a different pool (train.py verifies the pool path and SHA):")
+    print("   PTCG_MAX_OPT=24 .venv/bin/python -u -m rl_osfp.train \\")
+    print(f"       --pool {args.out} --init <matching-bc-model.npz> \\")
+    print("       --out-dir rl_osfp/run_new --periods 12 --checkpoint-every 1")
 
 
 if __name__ == "__main__":

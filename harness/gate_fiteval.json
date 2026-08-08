@@ -1,0 +1,37 @@
+{
+  "archives": [
+    "grpo_tech_grim_972_912_811",
+    "submission_fiteval_techgrim"
+  ],
+  "games_per_pair": 120,
+  "budget_seconds_per_move": 1.1,
+  "elapsed_minutes": 77.75556475718817,
+  "ratings": {
+    "grpo_tech_grim_972_912_811": 11.5022533631658,
+    "submission_fiteval_techgrim": -11.5022533631658
+  },
+  "totals": {
+    "submission_fiteval_techgrim": {
+      "wins": 56,
+      "losses": 64,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811": {
+      "wins": 64,
+      "losses": 56,
+      "draws": 0,
+      "errors": 0
+    }
+  },
+  "invalid_action_games": {},
+  "step_capped_games": 0,
+  "pairs": {
+    "grpo_tech_grim_972_912_811|submission_fiteval_techgrim": {
+      "wins": 64,
+      "losses": 56,
+      "draws": 0,
+      "errors": 0
+    }
+  }
+}

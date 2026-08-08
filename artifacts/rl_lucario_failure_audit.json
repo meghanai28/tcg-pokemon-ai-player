@@ -1,0 +1,60 @@
+{
+  "run_dir": "/home/meghana/tcg-pokemon-ai-player/rl_osfp/run_lucario",
+  "periods": 1127,
+  "first_period": 1,
+  "last_period": 1127,
+  "state_period": 1127,
+  "games": 252448,
+  "decisions": 25614848,
+  "optimizer_steps": 151629,
+  "policy_lag_counts": {
+    "0": 36202,
+    "1": 181702,
+    "2": 34543,
+    "3": 1
+  },
+  "stale_fraction": 0.8565962099125365,
+  "errors": 5,
+  "invalid_actions": 0,
+  "mean_approx_kl": 0.015954993535134642,
+  "max_approx_kl": 0.045541729778051376,
+  "mean_clip_fraction": 0.16039720746368438,
+  "mean_reference_kl": 0.18506374807773146,
+  "learner_decks": {
+    "lucario": 252448
+  },
+  "opponent_decks": {
+    "field_0": 47186,
+    "field_1": 26329,
+    "field_2": 17838,
+    "field_8": 17739,
+    "field_4": 17187,
+    "field_3": 16644,
+    "field_15": 14545,
+    "field_11": 13247,
+    "field_7": 13015,
+    "field_5": 11998,
+    "field_6": 11695,
+    "field_9": 10968,
+    "field_12": 10156,
+    "field_13": 8366,
+    "field_10": 7907,
+    "field_14": 7628
+  },
+  "pool": {
+    "learner_decks": 1,
+    "field_decks": 16,
+    "learner_unique_cards": 17,
+    "field_unique_cards": 121,
+    "union_unique_cards": 121
+  },
+  "failures": [
+    "run used the unsafe cross-update async collector",
+    "216246/252448 sourced games (85.7%) have non-zero policy lag",
+    "engine errors: 5"
+  ],
+  "warnings": [
+    "252,448 games is only 8.4% of the 3M-game lower bound reported in the public RL discussion"
+  ],
+  "ready_to_scale": false
+}

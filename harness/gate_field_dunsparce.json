@@ -1,0 +1,107 @@
+{
+  "archives": [
+    "sub_scratch_dunsparce",
+    "field_techgrim_pop",
+    "field_alakazam",
+    "field_dreepy",
+    "field_dwebble",
+    "field_bugcatch",
+    "field_dunsparce_buneary"
+  ],
+  "games_per_pair": 40,
+  "budget_seconds_per_move": 0.25,
+  "elapsed_minutes": 21.60179433027903,
+  "ratings": {
+    "sub_scratch_dunsparce": 64.91061409053357,
+    "field_techgrim_pop": 151.39239254765974,
+    "field_alakazam": 64.90934052499276,
+    "field_dreepy": -78.26513224073551,
+    "field_dwebble": -21.57424487363035,
+    "field_bugcatch": -195.07032615131894,
+    "field_dunsparce_buneary": 13.697356102498734
+  },
+  "totals": {
+    "field_techgrim_pop": {
+      "wins": 25,
+      "losses": 15,
+      "draws": 0,
+      "errors": 0
+    },
+    "sub_scratch_dunsparce": {
+      "wins": 144,
+      "losses": 96,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_alakazam": {
+      "wins": 20,
+      "losses": 20,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dreepy": {
+      "wins": 12,
+      "losses": 28,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dwebble": {
+      "wins": 15,
+      "losses": 25,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_bugcatch": {
+      "wins": 7,
+      "losses": 33,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dunsparce_buneary": {
+      "wins": 17,
+      "losses": 23,
+      "draws": 0,
+      "errors": 0
+    }
+  },
+  "invalid_action_games": {},
+  "step_capped_games": 0,
+  "pairs": {
+    "field_techgrim_pop|sub_scratch_dunsparce": {
+      "wins": 25,
+      "losses": 15,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_alakazam|sub_scratch_dunsparce": {
+      "wins": 20,
+      "losses": 20,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dreepy|sub_scratch_dunsparce": {
+      "wins": 12,
+      "losses": 28,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dwebble|sub_scratch_dunsparce": {
+      "wins": 15,
+      "losses": 25,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_bugcatch|sub_scratch_dunsparce": {
+      "wins": 7,
+      "losses": 33,
+      "draws": 0,
+      "errors": 0
+    },
+    "field_dunsparce_buneary|sub_scratch_dunsparce": {
+      "wins": 17,
+      "losses": 23,
+      "draws": 0,
+      "errors": 0
+    }
+  }
+}

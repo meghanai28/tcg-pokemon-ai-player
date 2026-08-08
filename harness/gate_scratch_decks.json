@@ -1,0 +1,65 @@
+{
+  "archives": [
+    "grpo_tech_grim_972_912_811",
+    "sub_scratch_lucario",
+    "sub_scratch_dunsparce",
+    "sub_scratch_tech_grim"
+  ],
+  "games_per_pair": 80,
+  "budget_seconds_per_move": 0.25,
+  "elapsed_minutes": 23.332361396153768,
+  "ratings": {
+    "grpo_tech_grim_972_912_811": -0.05639436857080117,
+    "sub_scratch_lucario": -8.636794802820162,
+    "sub_scratch_dunsparce": 60.60312666661165,
+    "sub_scratch_tech_grim": -51.90993749522069
+  },
+  "totals": {
+    "sub_scratch_lucario": {
+      "wins": 39,
+      "losses": 41,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811": {
+      "wins": 120,
+      "losses": 120,
+      "draws": 0,
+      "errors": 0
+    },
+    "sub_scratch_dunsparce": {
+      "wins": 47,
+      "losses": 33,
+      "draws": 0,
+      "errors": 0
+    },
+    "sub_scratch_tech_grim": {
+      "wins": 34,
+      "losses": 46,
+      "draws": 0,
+      "errors": 0
+    }
+  },
+  "invalid_action_games": {},
+  "step_capped_games": 0,
+  "pairs": {
+    "grpo_tech_grim_972_912_811|sub_scratch_lucario": {
+      "wins": 41,
+      "losses": 39,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811|sub_scratch_dunsparce": {
+      "wins": 33,
+      "losses": 47,
+      "draws": 0,
+      "errors": 0
+    },
+    "grpo_tech_grim_972_912_811|sub_scratch_tech_grim": {
+      "wins": 46,
+      "losses": 34,
+      "draws": 0,
+      "errors": 0
+    }
+  }
+}

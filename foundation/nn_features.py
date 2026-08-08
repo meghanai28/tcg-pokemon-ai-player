@@ -16,11 +16,26 @@ Padding tokens have kind == PAD_KIND and a mask of 0.
 """
 from __future__ import annotations
 
+import os
+
 import numpy as np
 
 MAX_BOARD = 12
 MAX_HAND = 16
-MAX_OPT = 64
+# `PTCG_MAX_OPT=24` makes this encoder byte-for-byte equivalent to the one the
+# champion archive ships, which matters when training a model that will be
+# dropped into that archive by swapping `model.npz` alone.
+#
+# The two files differ in exactly two places, and setting MAX_OPT to 24 closes
+# both at once: the sequence length (SEQ 53 against 93), and the g[17] scalar,
+# which the champion divides by a literal 24.0 where this file divides by
+# MAX_OPT. Left at 64 the same position yields a different feature value than
+# the champion was trained on, which is a silent train/deploy mismatch rather
+# than an error.
+#
+# Only 1.04% of real selections offer more than 24 options (measured over 69,550
+# ACTIVE selections), so the narrower encoder truncates almost nothing.
+MAX_OPT = int(os.environ.get("PTCG_MAX_OPT", "64"))
 SEQ = 1 + MAX_BOARD + MAX_HAND + MAX_OPT
 F = 32
 N_KIND = 4

@@ -18,7 +18,7 @@ GRPO, 903.2 AWR-GRPO, 848.9 BC800).  It is never edited, and SHELL_MD5 below
 fails the build if it drifts.  Everything the rl_osfp network needs in order to sit
 behind it is handled by swapping the files *around* it:
 
-    nn_features.py / nn_features_rich.py   rl_osfp encoders (MAX_OPT 64, SEQ 93)
+    nn_features.py / nn_features_rich.py   frozen-shell encoders (MAX_OPT 24, SEQ 53)
     nn_infer_osfp.py                       the real numpy ActorCritic
     nn_infer.py                            adapter trimming forward() to 2 values
 
@@ -39,9 +39,12 @@ import shutil
 import tarfile
 import tempfile
 
+import numpy as np
+
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FOUNDATION = os.path.join(ROOT, "foundation")
+BC_TRAIN = os.path.join(ROOT, "bc_train")
 
 # md5 of the main.py inside the 972.0 / 903.2 / 848.9 archives.  A build that
 # does not reproduce this is not shipping the search that scored.
@@ -74,6 +77,29 @@ def deck_from_pool(pool_path: str, name: str) -> list[int]:
     raise SystemExit(f"{name} not in {pool_path}")
 
 
+def validate_osfp_model(path: str) -> dict:
+    """Reject BC/champion-format weights that the OSFP adapter cannot load."""
+    try:
+        with np.load(path) as weights:
+            if "_meta" not in weights.files:
+                raise ValueError("missing _meta")
+            meta = [int(value) for value in weights["_meta"]]
+            missing = {
+                "option_head.weight", "count_head.weight", "value_fc1.weight"
+            } - set(weights.files)
+            tensor_count = len(weights.files)
+    except Exception as error:
+        raise SystemExit(f"{path}: unreadable checkpoint: {error}") from error
+    if len(meta) < 6 or meta[5] != 2 or missing:
+        raise SystemExit(
+            f"{path}: expected a full rl_osfp v2 model_period/model_latest "
+            f"checkpoint (meta={meta}, missing={sorted(missing)}). A "
+            "champion_period export deliberately drops the count head and must "
+            "not be passed to this adapter."
+        )
+    return {"meta": meta, "tensors": tensor_count}
+
+
 def build(model: str | None, deck: list[int], out: str, deck_label: str) -> dict:
     shell = os.path.join(FOUNDATION, "search_shell_main.py")
     got = md5(shell)
@@ -84,11 +110,24 @@ def build(model: str | None, deck: list[int], out: str, deck_label: str) -> dict
             "the file that scored 972.0."
         )
 
+    model_report = validate_osfp_model(model) if model is not None else None
     staging = tempfile.mkdtemp(prefix="bcsearch_")
     try:
         shutil.copy2(shell, os.path.join(staging, "main.py"))
+        # The frozen shell and every BC checkpoint it has successfully served use
+        # MAX_OPT=24 / SEQ=53. `foundation/nn_features.py` is configurable for
+        # pure-RL experiments and defaults to 64, so copying it here would make a
+        # correctly trained checkpoint run under a different encoder on Kaggle.
+        # Package the literal training ABI instead.
+        base_encoder = os.path.join(BC_TRAIN, "nn_features.py")
+        with open(base_encoder, encoding="utf-8") as source:
+            encoder_text = source.read()
+        if "MAX_OPT = 24" not in encoder_text:
+            raise SystemExit(
+                f"{base_encoder} is no longer the frozen MAX_OPT=24 encoder"
+            )
         for name in ("nn_features.py", "nn_features_rich.py"):
-            shutil.copy2(os.path.join(FOUNDATION, name), os.path.join(staging, name))
+            shutil.copy2(os.path.join(BC_TRAIN, name), os.path.join(staging, name))
         # the real implementation, plus the shim the shell will actually import
         shutil.copy2(os.path.join(FOUNDATION, "nn_infer.py"),
                      os.path.join(staging, "nn_infer_osfp.py"))
@@ -120,6 +159,7 @@ def build(model: str | None, deck: list[int], out: str, deck_label: str) -> dict
             "archive": os.path.abspath(out),
             "model": os.path.abspath(model) if model else None,
             "model_md5": md5(model) if model else None,
+            "model_format": model_report,
             "shell_md5": got,
             "deck": deck_label,
             "deck_md5": hashlib.md5(
@@ -132,7 +172,11 @@ def build(model: str | None, deck: list[int], out: str, deck_label: str) -> dict
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default=None, help="rl_osfp .npz checkpoint")
+    parser.add_argument(
+        "--model", default=None,
+        help="full rl_osfp v2 model_period/model_latest .npz (not a "
+             "champion_period export)",
+    )
     parser.add_argument("--no-model", action="store_true",
                         help="ship the shell with no model.npz at all, so the search "
                              "runs on heuristic priors. This is the control that "

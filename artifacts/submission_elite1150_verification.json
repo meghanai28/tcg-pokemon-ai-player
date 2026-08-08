@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/submission_elite1150.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__34080854",
+  "net_calls": 560,
+  "calls_returning_priors": 560,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 12.037185171513038,
+  "net_calls_per_decision": 3.45679012345679,
+  "decisions": 162,
+  "invalid_actions": 0,
+  "mean_decision_ms": 993.6096180555732,
+  "max_decision_ms": 1363.9849979990686,
+  "outcomes": {
+    "wins": 2,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/rl_luc_p845.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__11c3ac93",
+  "net_calls": 324,
+  "calls_returning_priors": 324,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 9.17120977471684,
+  "net_calls_per_decision": 3.640449438202247,
+  "decisions": 89,
+  "invalid_actions": 0,
+  "mean_decision_ms": 1029.1242856180636,
+  "max_decision_ms": 1335.228329997335,
+  "outcomes": {
+    "wins": 2,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

@@ -1,0 +1,23 @@
+{
+  "archive": "/tmp/submission_rl_clean_smoke.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__fd655632",
+  "net_calls": 364,
+  "calls_returning_priors": 364,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 9.717503203309217,
+  "net_calls_per_decision": 3.533980582524272,
+  "decisions": 103,
+  "invalid_actions": 0,
+  "mean_decision_ms": 1043.280688028848,
+  "max_decision_ms": 1384.1630140013876,
+  "outcomes": {
+    "wins": 2,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

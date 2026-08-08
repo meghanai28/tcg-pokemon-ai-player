@@ -51,6 +51,7 @@ ones we do not.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import itertools
 import json
 import math
@@ -93,11 +94,14 @@ UNVERIFIED_ANCHORS = {"grpo_search_405_RECONSTRUCTED"}
 # Agent loading
 # --------------------------------------------------------------------------
 def _private_modules(agent_dir: str) -> dict:
-    """Import this archive's `nn_infer` and `cg` under private aliases.
+    """Import this archive's `nn_infer` under a private alias.
 
     Returns the mapping installed into `sys.modules` for the duration of each
-    call, so two archives never share a network implementation or an engine
-    binding.  Missing modules are skipped: not every archive ships a net.
+    call, so two archives never share a network implementation.  Missing modules
+    are skipped: not every archive ships a net.
+
+    `cg` is handled separately by `_private_cg`, because it is a package rather
+    than a module and archives genuinely disagree about its contents.
     """
     import importlib.util
 
@@ -128,17 +132,114 @@ def _private_modules(agent_dir: str) -> dict:
     return private
 
 
+def _cg_names() -> list:
+    return [n for n in sys.modules if n == "cg" or n.startswith("cg.")]
+
+
+def _private_cg(agent_dir: str) -> dict:
+    """This archive's own `cg` package, kept out of every other archive's way.
+
+    **Archives do not ship the same `cg`.**  Ours carries `engine.py`, the
+    ctypes binding the search needs; the published competitor archives ship
+    `api.py` and `utils.py` and no `engine.py` at all.  `cg` is imported by the
+    bare name, so whichever archive touched it first would define it for all of
+    them, and our shell's `from cg.engine import get_lib` would then raise
+    ModuleNotFoundError inside the try/except that exists to tolerate a missing
+    engine.  The agent keeps playing, on heuristic priors, with no search and no
+    error anywhere.
+
+    That is not hypothetical.  Measured before this fix: the champion went 0-8
+    against a rule-based agent and twelve full games finished in 1.6 seconds,
+    which is exactly what no-search looks like.  Every gate in this repo that
+    mixed a foreign archive with ours was measuring a crippled champion.
+
+    Submodules are imported lazily (`cg.engine` only on the first agent call),
+    so `wrapped` harvests whatever appeared and folds it back in here.
+    """
+    import importlib.util
+
+    cg_dir = os.path.join(agent_dir, "cg")
+    init = os.path.join(cg_dir, "__init__.py")
+    if not os.path.exists(init):
+        return {}
+
+    outer = {name: sys.modules[name] for name in _cg_names()}
+    for name in outer:
+        del sys.modules[name]
+    saved_path = list(sys.path)
+    sys.path.insert(0, agent_dir)
+    try:
+        # Loaded under the plain name `cg` so the relative imports inside the
+        # package resolve, then lifted straight back out again.
+        spec = importlib.util.spec_from_file_location(
+            "cg", init, submodule_search_locations=[cg_dir])
+        package = importlib.util.module_from_spec(spec)
+        sys.modules["cg"] = package
+        spec.loader.exec_module(package)
+        return {name: sys.modules[name] for name in _cg_names()}
+    finally:
+        sys.path[:] = saved_path
+        for name in _cg_names():
+            del sys.modules[name]
+        sys.modules.update(outer)
+
+
+@contextlib.contextmanager
+def _archive_context(agent_dir: str, private: dict, private_cg: dict):
+    """Make the ambient process look like this archive is the only agent.
+
+    Three things have to be true while an archive's code runs, and each one is
+    here because getting it wrong produced a well-formed archive that quietly
+    played a different game:
+
+      * `cg` and `nn_infer*` resolve to THIS archive's copies (see
+        `_private_cg`), not to whichever archive imported them first.
+      * the current directory is the archive's own, because agents in the wild
+        resolve `deck.csv` against cwd and fall back to
+        `/kaggle_simulations/agent`, never touching `__file__`.  On Kaggle that
+        resolves per agent; here there is one cwd and several agents.
+      * whatever the archive imported lazily is kept for next time, so
+        `cg.engine` is not re-imported on every decision.
+
+    Save and restore live in this one place on purpose.  The previous version
+    of this file open-coded the swap twice and the copies had to stay in step.
+    """
+    saved = {name: sys.modules.get(name) for name in private}
+    outer_cg = {name: sys.modules[name] for name in _cg_names()}
+    here = os.getcwd()
+    try:
+        for name in outer_cg:
+            del sys.modules[name]
+        sys.modules.update(private_cg)
+        sys.modules.update(private)
+        os.chdir(agent_dir)
+        yield
+    finally:
+        private_cg.update({name: sys.modules[name] for name in _cg_names()})
+        os.chdir(here)
+        for name in _cg_names():
+            del sys.modules[name]
+        sys.modules.update(outer_cg)
+        for name, previous in saved.items():
+            if previous is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = previous
+
+
 def load_archive_agent(agent_dir: str):
     """Build a callable for one unpacked archive, isolated from the others."""
     main_py = os.path.join(agent_dir, "main.py")
     with open(main_py, encoding="utf-8") as handle:
         source = handle.read()
 
+    private_cg = _private_cg(agent_dir)
     namespace = {"__file__": main_py, "__name__": "__main__"}
     saved_path = list(sys.path)
     sys.path.insert(0, agent_dir)
     try:
-        exec(compile(source, main_py, "exec"), namespace)  # noqa: S102 - the runner does this
+        with _archive_context(agent_dir, {}, private_cg):
+            exec(compile(source, main_py, "exec"), namespace)  # noqa: S102 - the runner does this
     finally:
         sys.path[:] = saved_path
 
@@ -157,18 +258,8 @@ def load_archive_agent(agent_dir: str):
     private = _private_modules(agent_dir)
 
     def wrapped(observation, configuration=None):
-        saved = {}
-        for name, module in private.items():
-            saved[name] = sys.modules.get(name)
-            sys.modules[name] = module
-        try:
+        with _archive_context(agent_dir, private, private_cg):
             return chosen(observation)
-        finally:
-            for name, previous in saved.items():
-                if previous is None:
-                    sys.modules.pop(name, None)
-                else:
-                    sys.modules[name] = previous
 
     return wrapped
 
@@ -346,6 +437,11 @@ def main() -> None:
                         help="include anchors whose bytes were rebuilt rather than "
                              "recovered; off by default because one such anchor "
                              "drops the fit from R^2 0.987 to 0.635")
+    parser.add_argument("--vs", default=None,
+                        help="archive name (basename without .tar.gz) to play every "
+                             "other archive against. Turns the O(n^2) round robin "
+                             "into an O(n) gauntlet, which is what a deck screen "
+                             "wants. The round robin still decides the final pick.")
     parser.add_argument("--out", default=os.path.join(ROOT, "harness", "round_robin.json"))
     args = parser.parse_args()
 
@@ -361,24 +457,35 @@ def main() -> None:
             dirs[name] = unpack(archive, staging)
         names = list(dirs)
 
-        jobs = []
-        index = 0
-        for left, right in itertools.combinations(names, 2):
+        # `--vs` turns the round robin into a gauntlet against one fixed
+        # archive, which is O(n) instead of O(n^2).  Screening 20 decks pairwise
+        # is 190 pairs; anchored it is 19, and the scores stay comparable across
+        # candidates because every one of them faced the same opponent.
+        #
+        # The schedule is built ONCE and both the job list and the seat map are
+        # derived from it.  These were previously two separate loops that had to
+        # stay in lockstep, which is exactly how seat attribution breaks without
+        # anything raising.
+        if args.vs:
+            if args.vs not in names:
+                raise SystemExit(f"--vs {args.vs!r} is not one of the archives: {names}")
+            pairings = [(name, args.vs) for name in names if name != args.vs]
+        else:
+            pairings = list(itertools.combinations(names, 2))
+
+        jobs: list = []
+        seat_of = {}
+        for left, right in pairings:
             for game in range(args.games_per_pair):
                 # alternate seats so first-player advantage cancels
                 a, b = (left, right) if game % 2 == 0 else (right, left)
-                jobs.append((dirs[a], dirs[b], args.budget, index, args.max_steps))
-                index += 1
-        seat_of = {}
-        index = 0
-        for left, right in itertools.combinations(names, 2):
-            for game in range(args.games_per_pair):
-                a, b = (left, right) if game % 2 == 0 else (right, left)
+                index = len(jobs)
                 seat_of[index] = (a, b)
-                index += 1
+                jobs.append((dirs[a], dirs[b], args.budget, index, args.max_steps))
 
         print(f"{len(names)} archives, {len(jobs)} games, budget {args.budget}s/move, "
-              f"{args.workers} workers", flush=True)
+              f"{args.workers} workers"
+              + (f", gauntlet vs {args.vs}" if args.vs else ", round robin"), flush=True)
 
         began = time.time()
         results = []

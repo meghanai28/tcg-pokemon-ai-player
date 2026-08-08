@@ -1,0 +1,23 @@
+{
+  "archive": "/home/meghana/tcg-pokemon-ai-player/artifacts/sub_scratch_lucario.tar.gz",
+  "net_loaded": true,
+  "encoder": "nn_features_rich__1e4aca18",
+  "net_calls": 492,
+  "calls_returning_priors": 492,
+  "calls_returning_none": 0,
+  "prior_rate": 1.0,
+  "ms_per_net_call": 10.352742439046438,
+  "net_calls_per_decision": 3.6444444444444444,
+  "decisions": 135,
+  "invalid_actions": 0,
+  "mean_decision_ms": 1086.2578724813864,
+  "max_decision_ms": 1382.9644769994047,
+  "outcomes": {
+    "wins": 2,
+    "losses": 0,
+    "step_caps": 0,
+    "errors": 0
+  },
+  "failures": [],
+  "passed": true
+}

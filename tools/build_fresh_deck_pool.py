@@ -8,8 +8,10 @@ from __future__ import annotations
 import argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
+import glob
 import json
 import math
+import multiprocessing as mp
 import os
 
 from mine_decks import iter_episodes, load_elos
@@ -45,22 +47,14 @@ def row(name: str, cards: tuple[int, ...], count: int, wins: int) -> dict:
     }
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("episodes")
-    parser.add_argument("--leaderboard", required=True)
-    parser.add_argument("--out", required=True)
-    parser.add_argument("--min-elo", type=float, default=900.0)
-    parser.add_argument("--min-appearances", type=int, default=8)
-    parser.add_argument("--field-size", type=int, default=16)
-    args = parser.parse_args()
-
-    elos = load_elos(args.leaderboard)
+def scan_source(job):
+    """Scan one archive; archive-level jobs keep memory and IPC bounded."""
+    path, elos, min_elo = job
     counts: Counter[tuple[int, ...]] = Counter()
     wins: defaultdict[tuple[int, ...], int] = defaultdict(int)
     pilots: defaultdict[tuple[int, ...], Counter[str]] = defaultdict(Counter)
     episodes = eligible = matched_pilots = 0
-    for episode in iter_episodes(args.episodes):
+    for episode in iter_episodes(path):
         episodes += 1
         try:
             steps = episode["steps"]
@@ -70,7 +64,7 @@ def main() -> None:
                 agent = agents[seat] if seat < len(agents) else {}
                 pilot = agent.get("Name") if isinstance(agent, dict) else None
                 elo = elos.get(pilot, -1.0)
-                if elo < args.min_elo:
+                if elo < min_elo:
                     continue
                 matched_pilots += 1
                 deck = steps[1][seat].get("action")
@@ -86,6 +80,46 @@ def main() -> None:
                 pilots[key][pilot or "unknown"] += 1
         except Exception:
             continue
+    return episodes, eligible, matched_pilots, counts, dict(wins), dict(pilots)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("episodes")
+    parser.add_argument("--leaderboard", required=True)
+    parser.add_argument("--out", required=True)
+    parser.add_argument("--min-elo", type=float, default=900.0)
+    parser.add_argument("--min-appearances", type=int, default=8)
+    parser.add_argument("--field-size", type=int, default=16)
+    parser.add_argument("--workers", type=int, default=6)
+    args = parser.parse_args()
+
+    elos = load_elos(args.leaderboard)
+    counts: Counter[tuple[int, ...]] = Counter()
+    wins: defaultdict[tuple[int, ...], int] = defaultdict(int)
+    pilots: defaultdict[tuple[int, ...], Counter[str]] = defaultdict(Counter)
+    episodes = eligible = matched_pilots = 0
+    if os.path.isdir(args.episodes):
+        sources = sorted(glob.glob(os.path.join(args.episodes, "*.zip")))
+        sources += sorted(glob.glob(os.path.join(args.episodes, "*.json")))
+    else:
+        sources = [args.episodes]
+    jobs = [(source, elos, args.min_elo) for source in sources]
+    if not jobs:
+        raise SystemExit(f"no ZIP/JSON replay sources in {args.episodes}")
+    workers = min(max(1, args.workers), len(jobs), os.cpu_count() or 1)
+    with mp.Pool(workers) as pool:
+        for done, result in enumerate(pool.imap_unordered(scan_source, jobs), 1):
+            part_episodes, part_eligible, part_matched, part_counts, part_wins, part_pilots = result
+            episodes += part_episodes
+            eligible += part_eligible
+            matched_pilots += part_matched
+            counts.update(part_counts)
+            for deck, value in part_wins.items():
+                wins[deck] += value
+            for deck, value in part_pilots.items():
+                pilots[deck].update(value)
+            print(f"archive {done}/{len(jobs)} merged", flush=True)
 
     if not counts:
         raise SystemExit(
@@ -143,6 +177,15 @@ def main() -> None:
         },
         "learner_decks": learner,
         "field_decks": field,
+        # Keep the bounded summary of every eligible exact list so the field
+        # size/diversity can be changed later without re-reading ~150 GB of JSON.
+        "candidate_decks": [
+            {**row(f"candidate_{index}", deck, counts[deck], wins[deck]),
+             "top_pilots": pilots[deck].most_common(3)}
+            for index, deck in enumerate(
+                sorted(counts, key=lambda item: counts[item], reverse=True)
+            )
+        ],
     }
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as target:

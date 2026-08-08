@@ -40,3 +40,15 @@
   145/180 games (75.0 min, eta 18 min)
   150/180 games (77.7 min, eta 16 min)
   155/180 games (79.6 min, eta 13 min)
+  160/180 games (82.4 min, eta 10 min)
+  165/180 games (85.2 min, eta 8 min)
+  170/180 games (88.0 min, eta 5 min)
+  175/180 games (90.3 min, eta 3 min)
+  180/180 games (93.3 min, eta 0 min)
+
+=== round robin ===
+     +86.2  grpo_tech_grim_972_912_811            81- 39 ( 67.5%)
+     +24.7  submission_bc_field9_specialist       66- 54 ( 55.0%)
+    -110.9  submission_grpo_deck_field9           33- 87 ( 27.5%)
+
+wrote harness/gate_field9_specialist.json

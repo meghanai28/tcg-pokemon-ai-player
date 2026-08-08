@@ -18,6 +18,7 @@ class GameResult:
     engine_steps: int
     invalid_actions: int
     error: str | None = None
+    step_capped: bool = False
 
 
 class Arena:
@@ -89,7 +90,10 @@ class Arena:
                 ):
                     records[seat].append(decision)
                 observation = next_observation
-            return GameResult(None, records, max_steps, invalid, "step cap reached")
+            # This is an artificial rollout horizon, not an engine fault. Keep
+            # the trajectory as a zero-reward draw so stalling is not deleted
+            # from the data and report the cap separately from real errors.
+            return GameResult(None, records, max_steps, invalid, None, True)
         except Exception as exc:  # engine faults must be visible in metrics
             return GameResult(None, records, 0, invalid, repr(exc))
         finally:
