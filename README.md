@@ -1,5 +1,9 @@
 # Pokemon TCG Kaggle agent (Hopefully Bronze or atleast 1000/6000 in Rankings)
 
+https://www.kaggle.com/competitions/pokemon-tcg-ai-battle/leaderboard
+
+Username: Meghana284
+
 Agent for Kaggle's `pokemon-tcg-ai-battle`. A submission is a tarball containing
 `main.py`: the first callback returns a 60-card deck, later callbacks return
 legal option indices.
