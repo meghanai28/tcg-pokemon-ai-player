@@ -1,4 +1,4 @@
-# Pokemon TCG Kaggle agent
+# Pokemon TCG Kaggle agent (Hopefully Bronze or atleast 1000/6000 in Rankings)
 
 Agent for Kaggle's `pokemon-tcg-ai-battle`. A submission is a tarball containing
 `main.py`: the first callback returns a 60-card deck, later callbacks return
@@ -85,7 +85,7 @@ tools/submit_with_backoff.sh <package.tar.gz> <marker.json> "message"
 .venv/bin/python tools/ladder_status.py --limit 10
 ```
 
-## What the ladder actually showed
+## What the ladder showed
 
 | package | eps | score | opponent-adjusted |
 |---|---:|---:|---:|
@@ -96,17 +96,16 @@ tools/submit_with_backoff.sh <package.tar.gz> <marker.json> "message"
 
 - Scores converge slowly, so never call a result before ~40 episodes, and read opponent-adjusted rather than peak.
 - `value_weight 0` beat the tuned value head; the aux head regressed on the bigger corpus and poisoned the shared trunk.
-- A perfect-info DAgger teacher made the blind student worse: +0.21 target CE and -3.3 top-1 in one epoch.
-- Local gates do not predict the ladder; one candidate won 155/240 locally and still failed live.
-- Deck swaps did not help; the census already had the deck in use at the top for high-Elo seats.
+- A perfect-info DAgger teacher made the blind student worse: +0.21 target CE and -3.3 top-1 in one epoch (room for improvement though, I probably needed a better robustness filter). 
+- Local gate was weak. I'd like to see how other competitors locally gated their models/agents for such high performance. I was struggling to do so efficently.
+- Deck swaps did not help. I think I should've tried action chunking, the only deck that worked with my model was tech grim and lucario (maybe because not as many combos as dreepy or bug catcher which both failed). BC should work with even less data so I see this as a failure on my end.
 
 ## What I would do differently
 
-- Run RL on a vectorized JAX engine; PPO hit 693,248 games and still scored 640, so the blocker was iteration speed on reward and curriculum, not game count.
-- Rebuild with agents around one parameterized runner and a structured results store, not 60 one-off scripts and a dozen parallel tracks.
-- One variable per experiment; the only question fully resolved was settled by a 2x2, and every single-run verdict stayed ambiguous for days.
-- Deduplicate on episode id at ingest, since group ids come from the filename and one episode from two sources straddles the holdout.
-- Budget ~40 episodes per evaluation and gate against a known-score anchor instead of a local head-to-head.
+- Run RL on a vectorized JAX engine; PPO hit 693,248 games and still scored 640, so the blocker was iteration speed on reward and curriculum, not game count. I saw people did this for Orbit wars. Is it applicable to TCG? Would be interesting to see.
+- Rebuild with agents around one parameterized runner and a structured results store, not 60 one-off scripts and a dozen parallel tracks. I did go of track multiple times trying to get PPO to work. The changes convulted my codebase and made it hard to follow. 
+- One variable per experiment, I think I changed too many in one go. 
+- I suffered from data leakage into my validation set because of weird download methods.
 
 ## Protected control
 
