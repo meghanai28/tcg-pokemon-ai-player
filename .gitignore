@@ -1,24 +1,15 @@
-data/replays_ladder/
-data/replays_ours_v1/
-data/replays_ours_v3/
-data/replays_iso/
-data/leaderboard/
-data/official_sdk/
-*.zip
-
-track1_search/train/data/
-track1_search/train/data_bc/
-track1_search/train/data_exit/
-track1_search/train/data_final/
-track1_search/train/data_own/
-track1_search/train/models_archive/
-track3_oracle/data/
-
-submission.tar.gz
+# Training data and generated model state
+data/
+agent/runs/*
+!agent/runs/.gitkeep
+*.npz
+# except the champion's shipped weights, which are part of the agent
+!agent/champion/model.npz
 *.tar.gz
-__pycache__/
-*.pyc
+*.zip
+episode-*-agent-*-logs.json
 
+# Credentials
 .kaggle/
 kaggle.json
 *.token
@@ -33,3 +24,9 @@ kaggle.json
 **/cg/sim.py
 **/cg/game.py
 **/cg/utils.py
+
+# Local
+.venv/
+__pycache__/
+*.pyc
+*.log

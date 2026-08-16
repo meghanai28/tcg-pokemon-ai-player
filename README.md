@@ -5,7 +5,20 @@ Agent for Kaggle's `pokemon-tcg-ai-battle`. A submission is a tarball containing
 legal option indices.
 
 The approach is behaviour cloning on high-Elo replays, used as the root prior
-for a frozen PUCT search shell. Use `.venv/bin/python` from the repo root.
+for a frozen PUCT search shell.
+
+## Setup
+
+The virtualenv and all training data were deleted after the competition to
+reclaim disk. Recreate the environment with:
+
+```bash
+uv venv --python 3.12 && uv pip install -r requirements.txt
+```
+
+Then re-fetch and re-ingest replays with `tools/fetch_replays.py` and
+`bc_train/ingest_episodes.py`. The census below records exactly what the shipped
+models were trained on.
 
 ## Layout
 
@@ -19,8 +32,34 @@ foundation/                 engine bindings and inference support
 tools/                      data fetch, DAgger generation, gating, submission
 harness/anchors/            the protected champion archive
 harness/meta/               deck census and submission markers
-data/                       training shards and DAgger corpora
 ```
+
+## Corpora used (deleted, census preserved)
+
+Ingested from Kaggle daily replay archives, Elo 800+, Aug 1 to Aug 16 2026.
+Training used a 5% episode-group holdout with seed 20260814 and `--min-elo 900`.
+
+| corpus | shards | episodes | decisions | decks | mean Elo | Elo range | win rate | size |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `bc_bulk_aug11` | 119 | 50,528 | 6,823,198 | 398 | 1022 | 801-1234 | 52.7% | 910 MB |
+| `bc_train_aug12` | 12 | 4,598 | 663,982 | 134 | 1030 | 800-1233 | 52.9% | 89 MB |
+| `bc_holdout_aug13` | 8 | 3,920 | 448,898 | 67 | 1087 | 1001-1233 | 56.4% | 59 MB |
+| `bc_rich_aug14` | 12 | 4,438 | 665,891 | 131 | 1058 | 802-1233 | 51.8% | 89 MB |
+| `bc_rich_aug15` | 12 | 4,668 | 679,368 | 158 | 1052 | 806-1220 | 53.0% | 92 MB |
+| `bc_rich_aug16` | 8 | 3,299 | 464,547 | 212 | 1023 | 802-1269 | 54.2% | 63 MB |
+| `dagger_clean_train` | 420 | 420 | 16,342 | 1 | n/a | n/a | 55.9% | 7 MB |
+| `dagger_clean_val` | 110 | 110 | 4,204 | 1 | n/a | n/a | 58.4% | 2 MB |
+
+Total 9,766,430 decisions across 71,981 episodes. A further 57 GB of raw daily
+archives under `data/fresh/` was the source and is re-downloadable from Kaggle.
+
+The two `dagger_*` corpora are the perfect-info MCTS labels, one deck only, mean
+teacher repeats 2.00 and mean q disagreement 0.0224. They are the one input that
+was generated locally rather than downloaded, so regenerating them means rerunning
+`tools/dagger_generate.py`. Given they measurably degraded the student, that is
+unlikely to be worth it.
+
+Regenerate this table with `tools/corpus_census.py`.
 
 ## Pipeline
 
@@ -55,8 +94,6 @@ tools/submit_with_backoff.sh <package.tar.gz> <marker.json> "message"
 | lucario_rich_fixed_aug13 | 38 | 837.2 | 846 |
 | bugcatch_clean | 12 | 546.6 | 543 |
 
-Hard-won lessons, in rough order of value:
-
 - Scores converge slowly, so never call a result before ~40 episodes, and read opponent-adjusted rather than peak.
 - `value_weight 0` beat the tuned value head; the aux head regressed on the bigger corpus and poisoned the shared trunk.
 - A perfect-info DAgger teacher made the blind student worse: +0.21 target CE and -3.3 top-1 in one epoch.
@@ -64,8 +101,6 @@ Hard-won lessons, in rough order of value:
 - Deck swaps did not help; the census already had the deck in use at the top for high-Elo seats.
 
 ## What I would do differently
-
-Directions, not results. None of this has been measured here.
 
 - Run RL on a vectorized JAX engine; PPO hit 693,248 games and still scored 640, so the blocker was iteration speed on reward and curriculum, not game count.
 - Rebuild with agents around one parameterized runner and a structured results store, not 60 one-off scripts and a dozen parallel tracks.
