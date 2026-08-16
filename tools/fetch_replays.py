@@ -39,6 +39,32 @@ def top_teams(lb_glob, n):
     return rows[:n]
 
 
+def parse_scored_subs(text, min_score):
+    """(submission_id, publicScore) rows above min_score.
+
+    A top-20 team often has several submissions, and only the newest is
+    necessarily strong: the rank-1 team currently holds both a 1221.4 and a
+    924.9. Pulling episodes from the weak one dilutes the corpus with exactly
+    the play we are trying to learn away from.
+    """
+    out = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 2 or not parts[0].isdigit():
+            continue
+        score = None
+        for tok in reversed(parts):
+            try:
+                score = float(tok)
+                break
+            except ValueError:
+                continue
+        if score is None or score < min_score:
+            continue
+        out.append((int(parts[0]), score))
+    return out
+
+
 def parse_ids(text, col=0):
     out = []
     for line in text.splitlines():
@@ -55,6 +81,9 @@ def main():
     ap.add_argument("--per-sub", type=int, default=25, help="episodes per submission")
     ap.add_argument("--out", default="ep")
     ap.add_argument("--lb", default="lb/*.csv")
+    ap.add_argument("--min-sub-score", type=float, default=0.0,
+                    help="skip a team's weaker submissions; only episodes from "
+                         "submissions at or above this public score are pulled")
     a = ap.parse_args()
 
     if not os.environ.get("KAGGLE_API_TOKEN"):
@@ -65,9 +94,12 @@ def main():
 
     got = 0
     for team_id, name, score in top_teams(a.lb, a.top):
-        subs = parse_ids(sh(["competitions", "team-submissions", str(team_id)]))
-        print(f"[{name} | {score}] {len(subs)} submissions", flush=True)
-        for sid in subs:
+        scored = parse_scored_subs(
+            sh(["competitions", "team-submissions", str(team_id)]),
+            a.min_sub_score)
+        print(f"[{name} | {score}] {len(scored)} submissions at/above "
+              f"{a.min_sub_score}", flush=True)
+        for sid, sub_score in scored:
             eps = parse_ids(sh(["competitions", "episodes", str(sid)]))[:a.per_sub]
             for eid in eps:
                 fn = f"episode-{eid}-replay.json"

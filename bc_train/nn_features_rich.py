@@ -14,8 +14,12 @@ from __future__ import annotations
 
 from collections import Counter
 
-import nn_features as _base
-from nn_features import *  # noqa: F401,F403 - re-export the fixed-shape ABI
+try:
+    from . import nn_features as _base
+    from .nn_features import *  # noqa: F401,F403 - re-export fixed-shape ABI
+except ImportError:  # direct-script execution with PYTHONPATH=bc_train
+    import nn_features as _base  # type: ignore[no-redef]
+    from nn_features import *  # type: ignore[no-redef]  # noqa: F401,F403
 
 
 DECK_AWARE = True
@@ -57,8 +61,18 @@ def _zone_card(cur, sel, option, me):
     if typ == OT_PLAY and area is None:
         area = HAND
 
-    if area in (DECK, LOOKING):
+    if area == DECK:
         item = _at(sel.get("deck") or [], index)
+    elif area == LOOKING:
+        # Revealed search/look cards are part of the public current state.  In
+        # live observations select.deck is normally null, so treating LOOKING
+        # like DECK erased every revealed identity to card ID zero.
+        looking = cur.get("looking")
+        if not isinstance(looking, list):
+            # Retain compatibility with older replay schemas that embedded the
+            # temporary reveal list in the selection object.
+            looking = sel.get("deck") or []
+        item = _at(looking, index)
     elif area == HAND:
         item = _at(pl.get("hand") or [], index)
     elif area == DISCARD:

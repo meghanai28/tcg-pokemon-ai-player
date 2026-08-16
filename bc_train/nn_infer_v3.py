@@ -31,7 +31,9 @@ class NumpyNet:
         meta = self.w["_meta"]
         self.d_model, self.n_layers, self.n_heads, self.d_ff = (int(x) for x in meta)
 
-    def forward(self, kind, card, scal, mask, ctx_id, stype_id):
+    def forward(self, kind, card, scal, mask, ctx_id, stype_id,
+                bag_card=None, bag_count=None, bag_kind=None,
+                bag_scal=None, bag_mask=None):
         """All args numpy. kind/card:[B,S] int, scal:[B,S,F], mask:[B,S] f32,
         ctx_id/stype_id:[B] int. Returns (pol_logits [B,S], value [B])."""
         w = self.w
@@ -43,8 +45,25 @@ class NumpyNet:
         g = w["ctx_emb.weight"][ctx_id] + w["stype_emb.weight"][stype_id]
         x[:, 0, :] += g
         x = x * mask[:, :, None]
+        main_len = x.shape[1]
+        full_mask = mask
+        feature_meta = w.get("_feature_meta", np.array([1]))
+        if int(feature_meta[0]) == 3:
+            if any(value is None for value in (
+                    bag_card, bag_count, bag_kind, bag_scal, bag_mask)):
+                raise ValueError("feature-v3 forward requires public-card bags")
+            weights = bag_count.astype(x.dtype, copy=False)
+            denom = np.maximum(weights.sum(-1, keepdims=True), 1.0)
+            pooled = (w["card_emb.weight"][bag_card]
+                      * weights[..., None]).sum(-2) / denom
+            bag_x = (pooled + w["kind_emb.weight"][bag_kind]
+                     + bag_scal @ w["scal_proj.weight"].T
+                     + w["scal_proj.bias"])
+            bag_x *= bag_mask[:, :, None]
+            x = np.concatenate((x, bag_x), axis=1)
+            full_mask = np.concatenate((mask, bag_mask), axis=1)
         B, S, _ = x.shape
-        neg = (1.0 - mask)[:, None, None, :] * -1e9
+        neg = (1.0 - full_mask)[:, None, None, :] * -1e9
 
         for li in range(self.n_layers):
             p = f"blocks.{li}."
@@ -61,7 +80,8 @@ class NumpyNet:
             x = x + h @ w[p + "fc2.weight"].T + w[p + "fc2.bias"]
 
         x = _layernorm(x, w["ln_f.weight"], w["ln_f.bias"])
-        pol = (x @ w["pol_head.weight"].T + w["pol_head.bias"]).squeeze(-1)
+        pol = (x[:, :main_len] @ w["pol_head.weight"].T
+               + w["pol_head.bias"]).squeeze(-1)
         pol = np.where(mask < 0.5, -1e9, pol)
         h = _gelu(x[:, 0, :] @ w["val_fc1.weight"].T + w["val_fc1.bias"])
         val = np.tanh((h @ w["val_fc2.weight"].T + w["val_fc2.bias"]).squeeze(-1))

@@ -33,7 +33,7 @@ both required to run two archives in one process:
     `nn_features*` by agent directory, precisely because "a bare import_module
     would hand every agent in the process whichever copy was imported first".
     It does *not* do this for `nn_infer`, and our archives disagree about what
-    `nn_infer.NumpyNet` is. The rl_osfp build ships an adapter whose `forward`
+    `nn_infer.NumpyNet` is. A legacy actor build shipped an adapter whose `forward`
     returns two values, the BC archives ship the original.  Whichever loaded
     first would silently define the other's network, and the failure is
     invisible: the loser falls back to heuristic priors and plays on.
@@ -381,6 +381,20 @@ def bradley_terry(pairs: dict, names: list[str], iterations: int = 5000,
     return {name: theta[index[name]] for name in names}
 
 
+def wilson_interval(wins: int, losses: int, z: float = 1.96) -> tuple[float, float]:
+    """95% binomial interval for a head-to-head win rate."""
+    total = wins + losses
+    if total <= 0:
+        return 0.0, 1.0
+    p = wins / total
+    denominator = 1.0 + z * z / total
+    centre = p + z * z / (2.0 * total)
+    spread = z * math.sqrt(
+        p * (1.0 - p) / total + z * z / (4.0 * total * total))
+    return ((centre - spread) / denominator,
+            (centre + spread) / denominator)
+
+
 def spearman(xs: list[float], ys: list[float]) -> float:
     def rank(values):
         order = sorted(range(len(values)), key=lambda i: values[i])
@@ -442,6 +456,10 @@ def main() -> None:
                              "other archive against. Turns the O(n^2) round robin "
                              "into an O(n) gauntlet, which is what a deck screen "
                              "wants. The round robin still decides the final pick.")
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="reuse completed games from OUT's sibling *_games.jsonl; the "
+             "archive order and schedule must match exactly")
     parser.add_argument("--out", default=os.path.join(ROOT, "harness", "round_robin.json"))
     args = parser.parse_args()
 
@@ -483,31 +501,62 @@ def main() -> None:
                 seat_of[index] = (a, b)
                 jobs.append((dirs[a], dirs[b], args.budget, index, args.max_steps))
 
-        print(f"{len(names)} archives, {len(jobs)} games, budget {args.budget}s/move, "
-              f"{args.workers} workers"
-              + (f", gauntlet vs {args.vs}" if args.vs else ", round robin"), flush=True)
-
-        began = time.time()
-        results = []
         # Games are appended as they finish.  A full round robin at the shipping
         # budget runs for hours, and the report is only assembled at the end, so
-        # without this a timeout or a killed run loses every game it played.
+        # --resume validates and reuses those durable records after interruption.
         stream_path = os.path.splitext(args.out)[0] + "_games.jsonl"
         os.makedirs(os.path.dirname(os.path.abspath(stream_path)), exist_ok=True)
+        scheduled_jobs = jobs
+        previous: list[dict] = []
+        seen_indices: set[int] = set()
+        if args.resume and os.path.isfile(stream_path):
+            with open(stream_path, encoding="utf-8") as source:
+                for line_number, line in enumerate(source, 1):
+                    try:
+                        record = json.loads(line)
+                        index = int(record["index"])
+                    except (ValueError, TypeError, KeyError,
+                            json.JSONDecodeError) as exc:
+                        raise SystemExit(
+                            f"cannot resume: malformed {stream_path} line "
+                            f"{line_number}: {exc}") from exc
+                    if index in seen_indices or index not in seat_of:
+                        raise SystemExit(
+                            f"cannot resume: duplicate/out-of-range game index {index}")
+                    if tuple(record.get("seats") or ()) != seat_of[index]:
+                        raise SystemExit(
+                            f"cannot resume: game {index} seats changed; archive "
+                            "order, --vs, or --games-per-pair differs")
+                    seen_indices.add(index)
+                    previous.append({key: value for key, value in record.items()
+                                     if key != "seats"})
+        jobs = [job for job in scheduled_jobs if job[3] not in seen_indices]
+        print(f"{len(names)} archives, {len(scheduled_jobs)} scheduled games "
+              f"({len(previous)} resumed, {len(jobs)} remaining), budget "
+              f"{args.budget}s/move, {args.workers} workers"
+              + (f", gauntlet vs {args.vs}" if args.vs else ", round robin"),
+              flush=True)
+
+        began = time.time()
+        results = list(previous)
         context = mp.get_context("spawn")
-        with context.Pool(args.workers) as pool, \
-                open(stream_path, "w", encoding="utf-8") as stream:
-            for done, result in enumerate(pool.imap_unordered(_play, jobs), 1):
-                results.append(result)
-                record = dict(result)
-                record["seats"] = list(seat_of[result["index"]])
-                stream.write(json.dumps(record) + "\n")
-                stream.flush()
-                if done % 5 == 0 or done == len(jobs):
-                    rate = (time.time() - began) / done
-                    print(f"  {done}/{len(jobs)} games "
-                          f"({(time.time() - began) / 60:.1f} min, "
-                          f"eta {rate * (len(jobs) - done) / 60:.0f} min)", flush=True)
+        stream_mode = "a" if args.resume else "w"
+        with open(stream_path, stream_mode, encoding="utf-8") as stream:
+            if jobs:
+                with context.Pool(args.workers) as pool:
+                    for done, result in enumerate(
+                            pool.imap_unordered(_play, jobs), 1):
+                        results.append(result)
+                        record = dict(result)
+                        record["seats"] = list(seat_of[result["index"]])
+                        stream.write(json.dumps(record) + "\n")
+                        stream.flush()
+                        if done % 5 == 0 or done == len(jobs):
+                            rate = (time.time() - began) / done
+                            print(f"  {done}/{len(jobs)} remaining games "
+                                  f"({(time.time() - began) / 60:.1f} min, "
+                                  f"eta {rate * (len(jobs) - done) / 60:.0f} min)",
+                                  flush=True)
 
         pairs = defaultdict(lambda: {"wins": 0, "losses": 0, "draws": 0, "errors": 0})
         totals = defaultdict(lambda: {"wins": 0, "losses": 0, "draws": 0, "errors": 0})
@@ -547,17 +596,29 @@ def main() -> None:
                     pairs[key]["losses"] += 1
 
         ratings = bradley_terry(pairs, names)
+        confidence = {}
+        for (left, right), record in pairs.items():
+            lo, hi = wilson_interval(record["wins"], record["losses"])
+            decided = record["wins"] + record["losses"]
+            confidence[f"{left}|{right}"] = {
+                "decided": decided,
+                "left_win_rate": record["wins"] / decided if decided else None,
+                "left_wilson_95": [lo, hi],
+            }
 
         report = {
             "archives": names,
             "games_per_pair": args.games_per_pair,
             "budget_seconds_per_move": args.budget,
             "elapsed_minutes": (time.time() - began) / 60.0,
+            "resumed_games": len(previous),
+            "completed_games": len(results),
             "ratings": ratings,
             "totals": {k: dict(v) for k, v in totals.items()},
             "invalid_action_games": dict(invalid),
             "step_capped_games": capped,
             "pairs": {f"{a}|{b}": dict(v) for (a, b), v in pairs.items()},
+            "pair_confidence": confidence,
         }
 
         print("\n=== round robin ===", flush=True)
@@ -566,8 +627,10 @@ def main() -> None:
             record = totals[name]
             decided = record["wins"] + record["losses"]
             rate = record["wins"] / decided if decided else 0.0
+            lo, hi = wilson_interval(record["wins"], record["losses"])
             print(f"  {ratings[name]:+8.1f}  {name:36s} "
-                  f"{record['wins']:3d}-{record['losses']:3d} ({rate * 100:5.1f}%)"
+                  f"{record['wins']:3d}-{record['losses']:3d} ({rate * 100:5.1f}%, "
+                  f"95% {lo * 100:4.1f}-{hi * 100:4.1f}%)"
                   f"{'  INVALID:' + str(invalid[name]) if invalid[name] else ''}",
                   flush=True)
 

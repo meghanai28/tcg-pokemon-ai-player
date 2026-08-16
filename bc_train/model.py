@@ -12,16 +12,15 @@ Weights are exported to a flat .npz consumed by the numpy inference module.
 from __future__ import annotations
 
 import math
-import os
-import sys
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as Fn
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "submission"))
-import nn_features as NF  # noqa: E402
+try:
+    from . import nn_features as NF
+except ImportError:  # direct-script import through bc_train/train_bc.py
+    import nn_features as NF  # type: ignore[no-redef]
 
 D_MODEL = 96
 N_LAYERS = 3
@@ -73,18 +72,40 @@ class TCGNet(nn.Module):
         self.val_fc2 = nn.Linear(64, 1)
         nn.init.normal_(self.card_emb.weight, std=0.02)
 
-    def forward(self, kind, card, scal, mask, ctx_id, stype_id):
+    def forward(self, kind, card, scal, mask, ctx_id, stype_id,
+                bag_card=None, bag_count=None, bag_kind=None,
+                bag_scal=None, bag_mask=None):
         """kind/card: [B,S] long; scal: [B,S,F]; mask: [B,S]; ctx/stype: [B]."""
         x = self.card_emb(card) + self.kind_emb(kind) + self.scal_proj(scal)
         x = Fn.dropout(x, p=DROPOUT, training=self.training)
         g = self.ctx_emb(ctx_id) + self.stype_emb(stype_id)   # [B, D]
         x = torch.cat([x[:, :1, :] + g[:, None, :], x[:, 1:, :]], dim=1)
         x = x * mask[:, :, None]
-        attn_mask = (1.0 - mask)[:, None, None, :] * -1e9
+
+        # Feature-v3 carries variable public-card collections as compact
+        # Deep-Set bags.  Pooling before attention retains exact identities and
+        # counts without making transformer cost quadratic in every deck card.
+        main_len = x.shape[1]
+        full_mask = mask
+        if getattr(NF, "FEATURE_VERSION", 1) == 3:
+            if any(value is None for value in (
+                    bag_card, bag_count, bag_kind, bag_scal, bag_mask)):
+                raise ValueError("feature-v3 forward requires public-card bags")
+            weights = bag_count.to(x.dtype)
+            denom = weights.sum(-1, keepdim=True).clamp_min(1.0)
+            pooled = (self.card_emb(bag_card) * weights[..., None]).sum(-2)
+            pooled = pooled / denom
+            bag_x = (pooled + self.kind_emb(bag_kind)
+                     + self.scal_proj(bag_scal))
+            bag_x = bag_x * bag_mask[:, :, None]
+            x = torch.cat((x, bag_x), dim=1)
+            full_mask = torch.cat((mask, bag_mask), dim=1)
+
+        attn_mask = (1.0 - full_mask)[:, None, None, :] * -1e9
         for b in self.blocks:
             x = b(x, attn_mask)
         x = self.ln_f(x)
-        pol_logits = self.pol_head(x).squeeze(-1)             # [B, S]
+        pol_logits = self.pol_head(x[:, :main_len]).squeeze(-1)  # [B, S]
         pol_logits = pol_logits.masked_fill(mask < 0.5, -1e9)
         v = torch.tanh(self.val_fc2(
             Fn.gelu(self.val_fc1(x[:, 0, :]), approximate="tanh"))).squeeze(-1)
@@ -97,6 +118,9 @@ def export_npz(model: TCGNet, path: str):
     for k, v in sd.items():
         out[k] = v.detach().cpu().numpy().astype(np.float32)
     out["_meta"] = np.array([D_MODEL, N_LAYERS, N_HEADS, D_FF], dtype=np.int64)
+    out["_feature_meta"] = np.array([
+        int(getattr(NF, "FEATURE_VERSION", 1)), int(NF.SEQ), int(NF.F),
+        int(NF.N_CARD), int(NF.N_KIND)], dtype=np.int64)
     np.savez_compressed(path, **out)
 
 

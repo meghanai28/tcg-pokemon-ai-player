@@ -81,20 +81,26 @@ def episodes(sess: requests.Session, submission_id: int) -> list[dict]:
 
     rows = []
     for episode in raw:
-        mine = other = None
-        for agent in episode.get("agents", []):
-            if agent.get("submissionId") == submission_id:
-                mine = agent
-            else:
-                other = agent
-        if mine is None or mine.get("updatedScore") is None:
+        # Kaggle inserts one validation mirror after an upload. Both seats use
+        # the same submission, one is assigned reward -1, and neither has an
+        # opponent rating. Counting that as a ladder loss understated every
+        # model's performance rating and added a fake episode to its record.
+        if episode.get("type") not in (None, "EPISODE_TYPE_PUBLIC"):
             continue
+        agents = episode.get("agents", [])
+        mine = [agent for agent in agents
+                if agent.get("submissionId") == submission_id]
+        other = [agent for agent in agents
+                 if agent.get("submissionId") != submission_id]
+        if len(mine) != 1 or len(other) != 1 or mine[0].get("updatedScore") is None:
+            continue
+        mine, other = mine[0], other[0]
         rows.append({
             "end": episode.get("endTime") or episode.get("createTime") or "",
             "before": mine.get("initialScore"),
             "after": mine["updatedScore"],
             "reward": mine.get("reward") or 0,
-            "opponent": (other or {}).get("initialScore"),
+            "opponent": other.get("initialScore"),
         })
     rows.sort(key=lambda r: r["end"])
     return rows

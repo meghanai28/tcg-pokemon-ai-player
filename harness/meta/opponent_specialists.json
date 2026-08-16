@@ -1,0 +1,8 @@
+{
+  "lucario": "grpo_prior/runs/bc_lucario_aug11/model_prior.npz",
+  "slowpoke_slowking": "grpo_prior/runs/bc_slowpoke_slowking/model_prior.npz",
+  "dreepy_drakloak": "grpo_prior/runs/bc_dreepy_drakloak/model_prior.npz",
+  "bugcatch_lillies": "grpo_prior/runs/bc_bugcatch_w6/model_prior.npz",
+  "dunsparce_opp": "grpo_prior/runs/bc_dunsparce_opp/model_prior.npz",
+  "alakazam_opp": "grpo_prior/runs/bc_alakazam_opp/model_prior.npz"
+}

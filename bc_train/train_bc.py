@@ -23,12 +23,14 @@ import torch
 import torch.nn.functional as Fn
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
-sys.path.insert(0, os.path.join(ROOT, "track1_search", "agent"))
-sys.path.insert(0, HERE)
-
-import nn_features as NF          # noqa: E402
-from model import TCGNet, export_npz  # noqa: E402
+if __package__:
+    from . import nn_features as NF
+    from .model import TCGNet, export_npz
+else:
+    # Preserve direct-script execution without depending on a deleted track.
+    sys.path.insert(0, HERE)
+    import nn_features as NF  # type: ignore[no-redef]  # noqa: E402
+    from model import TCGNet, export_npz  # noqa: E402
 
 
 CRITICAL_CONTEXTS = (0, 3, 4, 13, 14, 15, 16, 21, 22, 25, 35, 43)

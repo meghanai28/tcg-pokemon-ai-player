@@ -1,0 +1,1825 @@
+{
+  "config": {
+    "archive": "grpo_prior/runs/packages/candidate_bc_bugcatch_w6.tar.gz",
+    "replays": "data/fresh/own_replays_bug_bounded8",
+    "team": "Meghana284",
+    "max_states": 70,
+    "budget": 0.35,
+    "prior_temperature": 2.0,
+    "teacher_cap": 16,
+    "out": "harness/meta/bug_w6_on_bounded8_live_losses_aug14.json"
+  },
+  "summary": {
+    "states": 70,
+    "teacher_disagrees": 22,
+    "candidate_misses": 0,
+    "mean_actual_visit_share": 0.5033798187636298,
+    "q_covered": 70,
+    "mean_q_regret": 0.08942587368223269,
+    "high_regret_0p10": 17
+  },
+  "by_context": {
+    "0": {
+      "states": 28,
+      "teacher_disagrees": 4,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.568359375,
+      "q_covered": 28,
+      "mean_q_regret": 0.12401280304007647,
+      "high_regret_0p10": 12
+    },
+    "1": {
+      "states": 4,
+      "teacher_disagrees": 3,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.47879464285714285,
+      "q_covered": 4,
+      "mean_q_regret": 0.01932975851705407,
+      "high_regret_0p10": 0
+    },
+    "22": {
+      "states": 1,
+      "teacher_disagrees": 0,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.625,
+      "q_covered": 1,
+      "mean_q_regret": 0.0,
+      "high_regret_0p10": 0
+    },
+    "3": {
+      "states": 2,
+      "teacher_disagrees": 0,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.4375,
+      "q_covered": 2,
+      "mean_q_regret": 0.05807142857142857,
+      "high_regret_0p10": 0
+    },
+    "30": {
+      "states": 1,
+      "teacher_disagrees": 0,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.625,
+      "q_covered": 1,
+      "mean_q_regret": 0.01800000000000007,
+      "high_regret_0p10": 0
+    },
+    "4": {
+      "states": 2,
+      "teacher_disagrees": 0,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.8828125,
+      "q_covered": 2,
+      "mean_q_regret": 0.0,
+      "high_regret_0p10": 0
+    },
+    "41": {
+      "states": 8,
+      "teacher_disagrees": 0,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.8951737253289473,
+      "q_covered": 8,
+      "mean_q_regret": 0.021245535714285724,
+      "high_regret_0p10": 0
+    },
+    "7": {
+      "states": 21,
+      "teacher_disagrees": 13,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.29519435425685425,
+      "q_covered": 21,
+      "mean_q_regret": 0.07947745217660893,
+      "high_regret_0p10": 3
+    },
+    "8": {
+      "states": 3,
+      "teacher_disagrees": 2,
+      "candidate_misses": 0,
+      "mean_actual_visit_share": 0.052083333333333336,
+      "q_covered": 3,
+      "mean_q_regret": 0.24566666666666662,
+      "high_regret_0p10": 2
+    }
+  },
+  "states": [
+    {
+      "episode": 92951248,
+      "opponent": "hisatarosu",
+      "seat": 1,
+      "step": 11,
+      "turn": 2,
+      "context": 0,
+      "select_type": 0,
+      "options": 7,
+      "actual": [
+        4
+      ],
+      "teacher": [
+        4
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 7,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.19466666666666663,
+      "best_q": 0.0,
+      "q_regret": 0.19466666666666663
+    },
+    {
+      "episode": 92951248,
+      "opponent": "hisatarosu",
+      "seat": 1,
+      "step": 28,
+      "turn": 2,
+      "context": 7,
+      "select_type": 1,
+      "options": 11,
+      "actual": [
+        7
+      ],
+      "teacher": [
+        7
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 11,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": 0.3504558823529412,
+      "best_q": 0.3504558823529412,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92951248,
+      "opponent": "hisatarosu",
+      "seat": 1,
+      "step": 56,
+      "turn": 4,
+      "context": 0,
+      "select_type": 0,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 1.0,
+      "actual_q": 0.027408143939394038,
+      "best_q": 0.027408143939394038,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92951248,
+      "opponent": "hisatarosu",
+      "seat": 1,
+      "step": 91,
+      "turn": 6,
+      "context": 7,
+      "select_type": 1,
+      "options": 3,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": -0.11876893939393934,
+      "best_q": -0.11876893939393934,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92951248,
+      "opponent": "hisatarosu",
+      "seat": 1,
+      "step": 107,
+      "turn": 6,
+      "context": 7,
+      "select_type": 1,
+      "options": 6,
+      "actual": [
+        0,
+        2,
+        5
+      ],
+      "teacher": [
+        1,
+        4,
+        5
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 20,
+      "visits": 32,
+      "actual_visit_share": 0.0,
+      "actual_q": 0.0,
+      "best_q": 0.4590833333333332,
+      "q_regret": 0.4590833333333332
+    },
+    {
+      "episode": 92953124,
+      "opponent": "MAJ0RT0M",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.005642857142857156,
+      "best_q": 0.028000000000000025,
+      "q_regret": 0.022357142857142867
+    },
+    {
+      "episode": 92953124,
+      "opponent": "MAJ0RT0M",
+      "seat": 0,
+      "step": 35,
+      "turn": 3,
+      "context": 7,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0,
+        1
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": -0.018500000000000072,
+      "best_q": -0.01100000000000001,
+      "q_regret": 0.007500000000000062
+    },
+    {
+      "episode": 92953124,
+      "opponent": "MAJ0RT0M",
+      "seat": 0,
+      "step": 74,
+      "turn": 5,
+      "context": 7,
+      "select_type": 1,
+      "options": 4,
+      "actual": [
+        0,
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 7,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": 0.21100000000000008,
+      "best_q": 0.2252727272727273,
+      "q_regret": 0.014272727272727215
+    },
+    {
+      "episode": 92953124,
+      "opponent": "MAJ0RT0M",
+      "seat": 0,
+      "step": 110,
+      "turn": 8,
+      "context": 4,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        3
+      ],
+      "teacher": [
+        3
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.1457480798771122,
+      "best_q": 0.1457480798771122,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92953124,
+      "opponent": "MAJ0RT0M",
+      "seat": 0,
+      "step": 147,
+      "turn": 13,
+      "context": 0,
+      "select_type": 0,
+      "options": 4,
+      "actual": [
+        3
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 4,
+      "visits": 32,
+      "actual_visit_share": 0.0,
+      "actual_q": 0.0,
+      "best_q": 0.20326666666666676,
+      "q_regret": 0.20326666666666676
+    },
+    {
+      "episode": 92957784,
+      "opponent": "Tony Li",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.005785714285714283,
+      "best_q": 0.028000000000000025,
+      "q_regret": 0.022214285714285742
+    },
+    {
+      "episode": 92957784,
+      "opponent": "Tony Li",
+      "seat": 0,
+      "step": 21,
+      "turn": 1,
+      "context": 0,
+      "select_type": 0,
+      "options": 2,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 1.0,
+      "actual_q": 0.5281875,
+      "best_q": 0.5281875,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92957784,
+      "opponent": "Tony Li",
+      "seat": 0,
+      "step": 61,
+      "turn": 5,
+      "context": 0,
+      "select_type": 0,
+      "options": 15,
+      "actual": [
+        6
+      ],
+      "teacher": [
+        6
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 15,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.32866666666666655,
+      "best_q": 0.32866666666666655,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92957784,
+      "opponent": "Tony Li",
+      "seat": 0,
+      "step": 99,
+      "turn": 7,
+      "context": 0,
+      "select_type": 0,
+      "options": 15,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 15,
+      "visits": 32,
+      "actual_visit_share": 0.75,
+      "actual_q": 0.38685714285714295,
+      "best_q": 0.39780952380952395,
+      "q_regret": 0.010952380952380991
+    },
+    {
+      "episode": 92957784,
+      "opponent": "Tony Li",
+      "seat": 0,
+      "step": 139,
+      "turn": 11,
+      "context": 7,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 3200,
+      "actual_visit_share": 0.74875,
+      "actual_q": -0.954245315450077,
+      "best_q": -0.9517353564850319,
+      "q_regret": 0.0025099589650450227
+    },
+    {
+      "episode": 92959665,
+      "opponent": "KyuuSamurai",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 512,
+      "actual_visit_share": 0.89453125,
+      "actual_q": 0.028775109170305634,
+      "best_q": 0.028775109170305634,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92959665,
+      "opponent": "KyuuSamurai",
+      "seat": 0,
+      "step": 43,
+      "turn": 5,
+      "context": 0,
+      "select_type": 0,
+      "options": 12,
+      "actual": [
+        10
+      ],
+      "teacher": [
+        10
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 12,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.3823809523809523,
+      "best_q": 0.0,
+      "q_regret": 0.3823809523809523
+    },
+    {
+      "episode": 92959665,
+      "opponent": "KyuuSamurai",
+      "seat": 0,
+      "step": 58,
+      "turn": 5,
+      "context": 0,
+      "select_type": 0,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.625,
+      "actual_q": 0.031016666666666783,
+      "best_q": 0.13908333333333345,
+      "q_regret": 0.10806666666666667
+    },
+    {
+      "episode": 92959665,
+      "opponent": "KyuuSamurai",
+      "seat": 0,
+      "step": 86,
+      "turn": 7,
+      "context": 0,
+      "select_type": 0,
+      "options": 14,
+      "actual": [
+        12
+      ],
+      "teacher": [
+        12
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 14,
+      "visits": 32,
+      "actual_visit_share": 1.0,
+      "actual_q": -0.06975000000000005,
+      "best_q": 0.0,
+      "q_regret": 0.06975000000000005
+    },
+    {
+      "episode": 92959665,
+      "opponent": "KyuuSamurai",
+      "seat": 0,
+      "step": 118,
+      "turn": 9,
+      "context": 7,
+      "select_type": 1,
+      "options": 6,
+      "actual": [
+        1,
+        2,
+        4
+      ],
+      "teacher": [
+        0,
+        1,
+        4
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 20,
+      "visits": 32,
+      "actual_visit_share": 0.0625,
+      "actual_q": 0.05841666666666678,
+      "best_q": 0.05841666666666678,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92960611,
+      "opponent": "Haokai Ding",
+      "seat": 1,
+      "step": 11,
+      "turn": 2,
+      "context": 0,
+      "select_type": 0,
+      "options": 8,
+      "actual": [
+        6
+      ],
+      "teacher": [
+        6
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 8,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.3970000000000001,
+      "best_q": 0.0,
+      "q_regret": 0.3970000000000001
+    },
+    {
+      "episode": 92960611,
+      "opponent": "Haokai Ding",
+      "seat": 1,
+      "step": 37,
+      "turn": 4,
+      "context": 0,
+      "select_type": 0,
+      "options": 15,
+      "actual": [
+        11
+      ],
+      "teacher": [
+        11
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 15,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": -0.2778571428571428,
+      "best_q": 0.0,
+      "q_regret": 0.2778571428571428
+    },
+    {
+      "episode": 92960611,
+      "opponent": "Haokai Ding",
+      "seat": 1,
+      "step": 69,
+      "turn": 6,
+      "context": 0,
+      "select_type": 0,
+      "options": 11,
+      "actual": [
+        7
+      ],
+      "teacher": [
+        7
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 11,
+      "visits": 32,
+      "actual_visit_share": 0.25,
+      "actual_q": -0.20166666666666666,
+      "best_q": 0.0,
+      "q_regret": 0.20166666666666666
+    },
+    {
+      "episode": 92960611,
+      "opponent": "Haokai Ding",
+      "seat": 1,
+      "step": 100,
+      "turn": 8,
+      "context": 0,
+      "select_type": 0,
+      "options": 18,
+      "actual": [
+        14
+      ],
+      "teacher": [
+        14
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 16,
+      "visits": 32,
+      "actual_visit_share": 0.625,
+      "actual_q": 0.17754545454545453,
+      "best_q": 0.17754545454545453,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92960611,
+      "opponent": "Haokai Ding",
+      "seat": 1,
+      "step": 149,
+      "turn": 11,
+      "context": 8,
+      "select_type": 1,
+      "options": 9,
+      "actual": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "teacher": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 49,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": 0.1359999999999999,
+      "best_q": 0.1359999999999999,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92961552,
+      "opponent": "joicygiore",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 128,
+      "actual_visit_share": 0.8984375,
+      "actual_q": 0.026321739130434785,
+      "best_q": 0.026321739130434785,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92961552,
+      "opponent": "joicygiore",
+      "seat": 0,
+      "step": 31,
+      "turn": 3,
+      "context": 0,
+      "select_type": 0,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 256,
+      "actual_visit_share": 0.9453125,
+      "actual_q": 0.017806965761511227,
+      "best_q": 0.017806965761511227,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92961552,
+      "opponent": "joicygiore",
+      "seat": 0,
+      "step": 65,
+      "turn": 5,
+      "context": 30,
+      "select_type": 4,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.625,
+      "actual_q": 0.14466666666666667,
+      "best_q": 0.16266666666666674,
+      "q_regret": 0.01800000000000007
+    },
+    {
+      "episode": 92961552,
+      "opponent": "joicygiore",
+      "seat": 0,
+      "step": 87,
+      "turn": 7,
+      "context": 7,
+      "select_type": 1,
+      "options": 6,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        4
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 6,
+      "visits": 32,
+      "actual_visit_share": 0.1875,
+      "actual_q": 0.18707142857142858,
+      "best_q": 0.22566666666666668,
+      "q_regret": 0.0385952380952381
+    },
+    {
+      "episode": 92961552,
+      "opponent": "joicygiore",
+      "seat": 0,
+      "step": 117,
+      "turn": 9,
+      "context": 3,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.06366666666666669,
+      "best_q": -0.015666666666666718,
+      "q_regret": 0.04799999999999997
+    },
+    {
+      "episode": 92964350,
+      "opponent": "SamuelSanolume",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": -0.0169642857142857,
+      "best_q": 0.028000000000000025,
+      "q_regret": 0.04496428571428572
+    },
+    {
+      "episode": 92964350,
+      "opponent": "SamuelSanolume",
+      "seat": 0,
+      "step": 45,
+      "turn": 5,
+      "context": 0,
+      "select_type": 0,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": -0.32721428571428574,
+      "best_q": -0.32699999999999996,
+      "q_regret": 0.00021428571428577792
+    },
+    {
+      "episode": 92964350,
+      "opponent": "SamuelSanolume",
+      "seat": 0,
+      "step": 92,
+      "turn": 9,
+      "context": 0,
+      "select_type": 0,
+      "options": 24,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 16,
+      "visits": 32,
+      "actual_visit_share": 0.0,
+      "actual_q": 0.0,
+      "best_q": 0.0,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92964350,
+      "opponent": "SamuelSanolume",
+      "seat": 0,
+      "step": 130,
+      "turn": 11,
+      "context": 7,
+      "select_type": 1,
+      "options": 4,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 4,
+      "visits": 32,
+      "actual_visit_share": 0.15625,
+      "actual_q": 0.0859558441558442,
+      "best_q": 0.0859558441558442,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92964350,
+      "opponent": "SamuelSanolume",
+      "seat": 0,
+      "step": 176,
+      "turn": 15,
+      "context": 7,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 128,
+      "actual_visit_share": 0.5625,
+      "actual_q": 0.4702083333333332,
+      "best_q": 0.4702083333333332,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92965297,
+      "opponent": "ba",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 608,
+      "actual_visit_share": 0.930921052631579,
+      "actual_q": 0.08854416961130746,
+      "best_q": 0.08854416961130746,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92965297,
+      "opponent": "ba",
+      "seat": 0,
+      "step": 15,
+      "turn": 1,
+      "context": 0,
+      "select_type": 0,
+      "options": 5,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 1.0,
+      "actual_q": 0.5800000000000001,
+      "best_q": 0.5800000000000001,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92965297,
+      "opponent": "ba",
+      "seat": 0,
+      "step": 56,
+      "turn": 7,
+      "context": 7,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.0367142857142857,
+      "best_q": 0.0367142857142857,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92965297,
+      "opponent": "ba",
+      "seat": 0,
+      "step": 106,
+      "turn": 11,
+      "context": 0,
+      "select_type": 0,
+      "options": 15,
+      "actual": [
+        12
+      ],
+      "teacher": [
+        12
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 15,
+      "visits": 32,
+      "actual_visit_share": 0.25,
+      "actual_q": -0.3853613445378151,
+      "best_q": 0.0,
+      "q_regret": 0.3853613445378151
+    },
+    {
+      "episode": 92965297,
+      "opponent": "ba",
+      "seat": 0,
+      "step": 118,
+      "turn": 11,
+      "context": 0,
+      "select_type": 0,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.75,
+      "actual_q": -0.26348774509803935,
+      "best_q": -0.2433613445378151,
+      "q_regret": 0.020126400560224245
+    },
+    {
+      "episode": 92966252,
+      "opponent": "Gayathri Rajeev77",
+      "seat": 1,
+      "step": 2,
+      "turn": 0,
+      "context": 1,
+      "select_type": 1,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.625,
+      "actual_q": -0.0522,
+      "best_q": 0.0,
+      "q_regret": 0.0522
+    },
+    {
+      "episode": 92966252,
+      "opponent": "Gayathri Rajeev77",
+      "seat": 1,
+      "step": 63,
+      "turn": 4,
+      "context": 7,
+      "select_type": 1,
+      "options": 11,
+      "actual": [
+        3
+      ],
+      "teacher": [
+        4
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 11,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": -0.3596666666666666,
+      "best_q": 0.0,
+      "q_regret": 0.3596666666666666
+    },
+    {
+      "episode": 92966252,
+      "opponent": "Gayathri Rajeev77",
+      "seat": 1,
+      "step": 122,
+      "turn": 6,
+      "context": 0,
+      "select_type": 0,
+      "options": 18,
+      "actual": [
+        14
+      ],
+      "teacher": [
+        14
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 16,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": -0.28311904761904755,
+      "best_q": 0.0,
+      "q_regret": 0.28311904761904755
+    },
+    {
+      "episode": 92966252,
+      "opponent": "Gayathri Rajeev77",
+      "seat": 1,
+      "step": 190,
+      "turn": 8,
+      "context": 0,
+      "select_type": 0,
+      "options": 7,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 7,
+      "visits": 32,
+      "actual_visit_share": 0.75,
+      "actual_q": -0.2983333333333334,
+      "best_q": 0.0,
+      "q_regret": 0.2983333333333334
+    },
+    {
+      "episode": 92966252,
+      "opponent": "Gayathri Rajeev77",
+      "seat": 1,
+      "step": 215,
+      "turn": 10,
+      "context": 7,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        4
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": -0.21999999999999997,
+      "best_q": -0.21999999999999997,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92970931,
+      "opponent": "kaneko takafumi",
+      "seat": 1,
+      "step": 3,
+      "turn": 0,
+      "context": 1,
+      "select_type": 1,
+      "options": 3,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": 0.10875,
+      "best_q": 0.13106249999999997,
+      "q_regret": 0.02231249999999997
+    },
+    {
+      "episode": 92970931,
+      "opponent": "kaneko takafumi",
+      "seat": 1,
+      "step": 38,
+      "turn": 4,
+      "context": 0,
+      "select_type": 0,
+      "options": 6,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 6,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": 0.43675,
+      "best_q": 0.43675,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92970931,
+      "opponent": "kaneko takafumi",
+      "seat": 1,
+      "step": 75,
+      "turn": 8,
+      "context": 22,
+      "select_type": 1,
+      "options": 3,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.625,
+      "actual_q": 0.4326333333333333,
+      "best_q": 0.4326333333333333,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92970931,
+      "opponent": "kaneko takafumi",
+      "seat": 1,
+      "step": 102,
+      "turn": 10,
+      "context": 3,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": 0.2949047619047619,
+      "best_q": 0.36304761904761906,
+      "q_regret": 0.06814285714285717
+    },
+    {
+      "episode": 92970931,
+      "opponent": "kaneko takafumi",
+      "seat": 1,
+      "step": 136,
+      "turn": 18,
+      "context": 0,
+      "select_type": 0,
+      "options": 3,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 32,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.7806414565826331,
+      "best_q": -0.34892436974789914,
+      "q_regret": 0.4317170868347339
+    },
+    {
+      "episode": 92972793,
+      "opponent": "[RU] Kirill Makhankov",
+      "seat": 1,
+      "step": 3,
+      "turn": 0,
+      "context": 1,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 224,
+      "actual_visit_share": 0.47767857142857145,
+      "actual_q": 0.01566355140186912,
+      "best_q": 0.018470085470085423,
+      "q_regret": 0.0028065340682163036
+    },
+    {
+      "episode": 92972793,
+      "opponent": "[RU] Kirill Makhankov",
+      "seat": 1,
+      "step": 64,
+      "turn": 6,
+      "context": 0,
+      "select_type": 0,
+      "options": 23,
+      "actual": [
+        20
+      ],
+      "teacher": [
+        20
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 16,
+      "visits": 512,
+      "actual_visit_share": 0.375,
+      "actual_q": 0.1799285714285714,
+      "best_q": 0.19883397683397702,
+      "q_regret": 0.018905405405405612
+    },
+    {
+      "episode": 92972793,
+      "opponent": "[RU] Kirill Makhankov",
+      "seat": 1,
+      "step": 121,
+      "turn": 10,
+      "context": 0,
+      "select_type": 0,
+      "options": 19,
+      "actual": [
+        15
+      ],
+      "teacher": [
+        15
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 16,
+      "visits": 96,
+      "actual_visit_share": 0.375,
+      "actual_q": -0.04263203463203464,
+      "best_q": 0.0,
+      "q_regret": 0.04263203463203464
+    },
+    {
+      "episode": 92972793,
+      "opponent": "[RU] Kirill Makhankov",
+      "seat": 1,
+      "step": 184,
+      "turn": 14,
+      "context": 7,
+      "select_type": 1,
+      "options": 9,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 45,
+      "visits": 160,
+      "actual_visit_share": 0.15,
+      "actual_q": 0.057168290043290014,
+      "best_q": 0.09414144551101074,
+      "q_regret": 0.036973155467720724
+    },
+    {
+      "episode": 92972793,
+      "opponent": "[RU] Kirill Makhankov",
+      "seat": 1,
+      "step": 221,
+      "turn": 16,
+      "context": 7,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        1
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 480,
+      "actual_visit_share": 0.5666666666666667,
+      "actual_q": 0.3548984933211254,
+      "best_q": 0.3563390754466124,
+      "q_regret": 0.0014405821254870332
+    },
+    {
+      "episode": 92974710,
+      "opponent": "Steven66886688",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 1184,
+      "actual_visit_share": 0.9375,
+      "actual_q": 0.10660710121886592,
+      "best_q": 0.10660710121886592,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92974710,
+      "opponent": "Steven66886688",
+      "seat": 0,
+      "step": 62,
+      "turn": 6,
+      "context": 4,
+      "select_type": 1,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 256,
+      "actual_visit_share": 0.890625,
+      "actual_q": -0.735115297713982,
+      "best_q": -0.735115297713982,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92974710,
+      "opponent": "Steven66886688",
+      "seat": 0,
+      "step": 82,
+      "turn": 7,
+      "context": 7,
+      "select_type": 1,
+      "options": 6,
+      "actual": [
+        3
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 6,
+      "visits": 64,
+      "actual_visit_share": 0.109375,
+      "actual_q": 0.057904761904761806,
+      "best_q": 0.05893333333333324,
+      "q_regret": 0.0010285714285714342
+    },
+    {
+      "episode": 92974710,
+      "opponent": "Steven66886688",
+      "seat": 0,
+      "step": 124,
+      "turn": 11,
+      "context": 0,
+      "select_type": 0,
+      "options": 7,
+      "actual": [
+        3
+      ],
+      "teacher": [
+        3
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 7,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": 0.05259523809523804,
+      "best_q": 0.05259523809523804,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92974710,
+      "opponent": "Steven66886688",
+      "seat": 0,
+      "step": 172,
+      "turn": 14,
+      "context": 8,
+      "select_type": 1,
+      "options": 7,
+      "actual": [
+        1,
+        2,
+        5,
+        6
+      ],
+      "teacher": [
+        0,
+        2,
+        3,
+        5
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 31,
+      "visits": 32,
+      "actual_visit_share": 0.0,
+      "actual_q": 0.0,
+      "best_q": 0.5286666666666666,
+      "q_regret": 0.5286666666666666
+    },
+    {
+      "episode": 92977520,
+      "opponent": "cabbage patch",
+      "seat": 0,
+      "step": 1,
+      "turn": 0,
+      "context": 41,
+      "select_type": 9,
+      "options": 2,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 2,
+      "visits": 32,
+      "actual_visit_share": 0.875,
+      "actual_q": -0.052428571428571435,
+      "best_q": 0.028000000000000025,
+      "q_regret": 0.08042857142857146
+    },
+    {
+      "episode": 92977520,
+      "opponent": "cabbage patch",
+      "seat": 0,
+      "step": 35,
+      "turn": 3,
+      "context": 7,
+      "select_type": 1,
+      "options": 4,
+      "actual": [
+        0,
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 7,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": 0.2669999999999999,
+      "best_q": 0.2669999999999999,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92977520,
+      "opponent": "cabbage patch",
+      "seat": 0,
+      "step": 67,
+      "turn": 5,
+      "context": 0,
+      "select_type": 0,
+      "options": 8,
+      "actual": [
+        0
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 8,
+      "visits": 32,
+      "actual_visit_share": 0.46875,
+      "actual_q": 0.09323809523809512,
+      "best_q": 0.20546938775510198,
+      "q_regret": 0.11223129251700686
+    },
+    {
+      "episode": 92977520,
+      "opponent": "cabbage patch",
+      "seat": 0,
+      "step": 82,
+      "turn": 5,
+      "context": 7,
+      "select_type": 1,
+      "options": 6,
+      "actual": [
+        0,
+        3
+      ],
+      "teacher": [
+        1,
+        5
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 15,
+      "visits": 32,
+      "actual_visit_share": 0.0,
+      "actual_q": 0.0,
+      "best_q": 0.6769999999999998,
+      "q_regret": 0.6769999999999998
+    },
+    {
+      "episode": 92977520,
+      "opponent": "cabbage patch",
+      "seat": 0,
+      "step": 107,
+      "turn": 7,
+      "context": 7,
+      "select_type": 1,
+      "options": 4,
+      "actual": [
+        0,
+        1
+      ],
+      "teacher": [
+        1,
+        2
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 6,
+      "visits": 128,
+      "actual_visit_share": 0.1953125,
+      "actual_q": 0.8309599999999999,
+      "best_q": 0.8363333333333333,
+      "q_regret": 0.005373333333333341
+    },
+    {
+      "episode": 92980346,
+      "opponent": "ei1333",
+      "seat": 1,
+      "step": 3,
+      "turn": 0,
+      "context": 1,
+      "select_type": 1,
+      "options": 3,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 3,
+      "visits": 192,
+      "actual_visit_share": 0.4375,
+      "actual_q": 0.09021428571428565,
+      "best_q": 0.09021428571428565,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92980346,
+      "opponent": "ei1333",
+      "seat": 1,
+      "step": 47,
+      "turn": 4,
+      "context": 7,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        0,
+        4
+      ],
+      "teacher": [
+        1,
+        4
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 11,
+      "visits": 352,
+      "actual_visit_share": 0.08522727272727272,
+      "actual_q": -0.14279047619047622,
+      "best_q": -0.07720754716981136,
+      "q_regret": 0.06558292902066486
+    },
+    {
+      "episode": 92980346,
+      "opponent": "ei1333",
+      "seat": 1,
+      "step": 81,
+      "turn": 8,
+      "context": 7,
+      "select_type": 1,
+      "options": 5,
+      "actual": [
+        2
+      ],
+      "teacher": [
+        2
+      ],
+      "teacher_agrees": true,
+      "candidate_miss": false,
+      "candidates": 5,
+      "visits": 32,
+      "actual_visit_share": 0.5,
+      "actual_q": -0.5218333333333334,
+      "best_q": -0.5218333333333334,
+      "q_regret": 0.0
+    },
+    {
+      "episode": 92980346,
+      "opponent": "ei1333",
+      "seat": 1,
+      "step": 94,
+      "turn": 8,
+      "context": 0,
+      "select_type": 0,
+      "options": 4,
+      "actual": [
+        1
+      ],
+      "teacher": [
+        0
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 4,
+      "visits": 32,
+      "actual_visit_share": 0.125,
+      "actual_q": 0.01866666666666661,
+      "best_q": 0.05277777777777785,
+      "q_regret": 0.03411111111111124
+    },
+    {
+      "episode": 92980346,
+      "opponent": "ei1333",
+      "seat": 1,
+      "step": 124,
+      "turn": 11,
+      "context": 8,
+      "select_type": 1,
+      "options": 7,
+      "actual": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "teacher": [
+        0,
+        1,
+        2,
+        5
+      ],
+      "teacher_agrees": false,
+      "candidate_miss": false,
+      "candidates": 34,
+      "visits": 32,
+      "actual_visit_share": 0.03125,
+      "actual_q": -0.20833333333333326,
+      "best_q": 0.0,
+      "q_regret": 0.20833333333333326
+    }
+  ]
+}
