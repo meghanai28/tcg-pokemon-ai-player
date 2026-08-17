@@ -1,4 +1,4 @@
-# Pokemon TCG Kaggle agent (Hopefully Bronze or atleast 1000/6000 in Rankings)
+# Pokemon TCG Kaggle agent
 
 https://www.kaggle.com/competitions/pokemon-tcg-ai-battle/leaderboard
 
